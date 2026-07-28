@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>חידון אינטראקטיבי – לחץ דם ואי־ספיקת לב</title>
+<style>
+:root{--bg:#06111f;--card:#102238;--text:#f7fbff;--muted:#a9bad0;--blue:#58c9ff;--gold:#ffc15d;--green:#35d07f;--red:#ff6b79;--line:rgba(255,255,255,.12)}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;font-family:Arial,sans-serif;color:var(--text);background:radial-gradient(circle at 10% 10%,rgba(88,201,255,.13),transparent 30%),radial-gradient(circle at 90% 90%,rgba(255,193,93,.1),transparent 30%),var(--bg)}
+.app{max-width:980px;margin:auto;padding:18px}
+.top{display:flex;justify-content:space-between;gap:14px;align-items:center;margin-bottom:14px}
+.brand{font-weight:900;font-size:18px}.status{color:var(--muted);font-weight:700;text-align:left}
+.progress{height:10px;border-radius:999px;background:#071827;overflow:hidden;margin-bottom:18px}
+.progress div{height:100%;width:0;background:linear-gradient(90deg,var(--blue),var(--gold));transition:.3s}
+.card{min-height:650px;border:1px solid var(--line);border-radius:28px;padding:clamp(22px,5vw,46px);background:linear-gradient(145deg,rgba(16,34,56,.98),rgba(10,24,41,.98));box-shadow:0 25px 70px rgba(0,0,0,.35);display:flex;flex-direction:column;justify-content:center}
+.kicker{color:var(--gold);font-weight:900;margin-bottom:12px}
+h1{font-size:clamp(25px,4vw,40px);line-height:1.45;margin:0 0 24px}
+.intro{text-align:center}.intro h1,.finish h1{font-size:clamp(34px,6vw,58px)}
+.intro p,.finish p{color:var(--muted);font-size:18px;line-height:1.8}
+.options{display:grid;gap:13px}
+.option{width:100%;border:1px solid var(--line);background:#0a1a2d;color:var(--text);padding:16px 18px;border-radius:15px;text-align:right;font-size:17px;line-height:1.55;cursor:pointer;transition:.18s}
+.option:hover:not(:disabled){transform:translateY(-2px);border-color:var(--blue)}
+.option.correct{border-color:var(--green);background:rgba(53,208,127,.17)}
+.option.wrong{border-color:var(--red);background:rgba(255,107,121,.17)}
+.option:disabled{cursor:default}
+.feedback{display:none;margin-top:20px;padding:18px 20px;border:1px solid var(--line);border-radius:17px;background:rgba(255,255,255,.055);line-height:1.75}
+.feedback strong{font-size:19px}
+.actions{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:22px}
+button.ctrl{border:0;border-radius:13px;padding:13px 19px;font-size:16px;font-weight:900;cursor:pointer}
+.primary{background:var(--blue);color:#06111e}.secondary{background:#18304d;color:var(--text);border:1px solid var(--line)!important}
+button:disabled{opacity:.45;cursor:not-allowed}
+.big-score{font-size:76px;color:var(--gold);font-weight:950;margin:12px}
+.finish{text-align:center}
+.mistakes{margin-top:20px;text-align:right;display:grid;gap:10px}
+.mistake{background:rgba(255,255,255,.05);border:1px solid var(--line);padding:13px;border-radius:12px;line-height:1.55}
+.note{font-size:14px;color:var(--muted);margin-top:18px}
+@media(max-width:600px){.app{padding:9px}.card{min-height:calc(100vh - 75px);border-radius:19px;padding:19px}.option{font-size:16px;padding:14px}.top{font-size:14px}}
+
+.menu-home{
+  position:fixed;
+  left:18px;
+  bottom:18px;
+  z-index:9999;
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  padding:11px 15px;
+  border-radius:12px;
+  background:#162a45;
+  color:#f7fbff;
+  border:1px solid rgba(255,255,255,.16);
+  text-decoration:none;
+  font-family:Arial,sans-serif;
+  font-weight:800;
+  box-shadow:0 10px 30px rgba(0,0,0,.3);
+}
+.menu-home:hover{transform:translateY(-2px)}
+@media(max-width:600px){.menu-home{left:10px;bottom:10px;padding:9px 12px;font-size:14px}}
+
+</style></head>
+<body><div class="app">
+<div class="top"><div class="brand">לחץ דם ואי־ספיקת לב</div><div id="status" class="status">מוכן להתחלה</div></div>
+<div class="progress"><div id="bar"></div></div>
+<main id="card" class="card"></main>
+</div>
+<script>
+const bank=[{"q": "מהי המשוואה המתארת את לחץ הדם?", "options": ["לחץ דם = תפוקת הלב × ההתנגדות הווסקולרית הפריפרית", "לחץ דם = קצב הלב + נפח הפעימה", "לחץ דם = עומס קדם ÷ תפוקת הלב", "לחץ דם = התנגדות הווסקולרית הפריפרית − תפוקת הלב"], "answer": 0, "explanation": "לחץ הדם נקבע בעיקר לפי תפוקת הלב ולפי ההתנגדות של כלי הדם לזרימת הדם."}, {"q": "מהי תפוקת הלב?", "options": ["כמות הדם שהלב מזרים בדקה", "כמות הדם הנשארת בחדר לאחר התכווצות", "הלחץ בתוך העורקים בלבד", "מספר פעימות הלב בשעה"], "answer": 0, "explanation": "תפוקת הלב היא נפח הדם שהלב מזרים לגוף ביחידת זמן, בדרך כלל בדקה."}, {"q": "איזה גורם אינו נחשב גורם מרכזי המשפיע על תפוקת הלב לפי המצגת?", "options": ["קצב הלב", "עוצמת ההתכווצות", "עומס קדם", "צבע תאי הדם"], "answer": 3, "explanation": "קצב הלב, עוצמת ההתכווצות ועומס הקדם משפיעים על תפוקת הלב; צבע תאי הדם אינו גורם כזה."}, {"q": "מהו עומס קדם?", "options": ["מידת מילוי החדר בסוף הדיאסטולה", "ההתנגדות שהלב פועל נגדה", "מספר פעימות הלב בדקה", "כוח הכיווץ של העורקים"], "answer": 0, "explanation": "עומס קדם משקף את מידת מתיחת החדר לפני ההתכווצות ותלוי בנפח הדם החוזר ללב."}, {"q": "מהו עומס אחר?", "options": ["ההתנגדות שהלב צריך להתגבר עליה כדי להזרים דם", "כמות הדם החוזרת ללב", "מהירות פירוק הברדיקינין", "כמות הנתרן בשתן"], "answer": 0, "explanation": "עומס אחר הוא ההתנגדות נגד פעולת ההזרקה של הלב, והוא עולה כאשר כלי הדם מכווצים."}, {"q": "מה קורה להתנגדות הווסקולרית הפריפרית כאשר העורקים מתכווצים?", "options": ["היא עולה", "היא יורדת", "אינה משתנה", "היא נעלמת"], "answer": 0, "explanation": "כיווץ כלי הדם מקטין את הקוטר ומקשה על זרימת הדם, ולכן ההתנגדות עולה."}, {"q": "מה קורה בדרך כלל ללחץ הדם כאשר ההתנגדות הווסקולרית הפריפרית עולה?", "options": ["לחץ הדם עולה", "לחץ הדם יורד", "קצב הלב נעצר", "נפח הדם נעלם"], "answer": 0, "explanation": "לפי המשוואה, עלייה בהתנגדות כלי הדם נוטה להעלות את לחץ הדם."}, {"q": "איזו מערכת מספקת תגובה מהירה לשינוי פתאומי בלחץ הדם?", "options": ["רפלקס קולטני הלחץ", "מערכת רנין–אנגיוטנסין–אלדוסטרון בלבד", "מערכת העיכול", "מערכת קרישת הדם"], "answer": 0, "explanation": "רפלקס קולטני הלחץ פועל תוך שניות עד דקות ומתקן במהירות שינויים בלחץ הדם."}, {"q": "היכן נמצאים קולטני לחץ חשובים?", "options": ["בקשת אבי העורקים ובסינוס הקרוטידי", "בכבד בלבד", "בשרירי השלד", "בלבלב"], "answer": 0, "explanation": "קולטני הלחץ נמצאים בין היתר בקשת אבי העורקים ובסינוס הקרוטידי וחשים מתיחה של דופן העורק."}, {"q": "מהי תגובת הגוף לירידה פתאומית בלחץ הדם?", "options": ["עלייה בפעילות הסימפתטית וירידה בפעילות הפאראסימפתטית", "ירידה בפעילות הסימפתטית ועלייה בפעילות הפאראסימפתטית", "הפסקת פעילות הלב", "ירידה מיידית בנפח הדם"], "answer": 0, "explanation": "כאשר לחץ הדם יורד, הגוף מעלה פעילות סימפתטית כדי להאיץ את הלב, לחזק את הכיווץ ולכווץ כלי דם."}, {"q": "מה קורה בדרך כלל מיד לאחר מעבר לעמידה?", "options": ["לחץ הדם יורד זמנית וקצב הלב עולה", "לחץ הדם עולה מאוד וקצב הלב יורד", "אין כל שינוי", "נפח הדם עולה מיד"], "answer": 0, "explanation": "בעמידה דם מצטבר זמנית בגפיים, לחץ הדם יורד, והרפלקס מעלה את קצב הלב כדי לתקן זאת."}, {"q": "איזו מערכת אחראית יותר לבקרה איטית ומתמשכת של נפח הדם?", "options": ["מערכת רנין–אנגיוטנסין–אלדוסטרון", "רפלקס קולטני הלחץ בלבד", "מערכת הנשימה", "מערכת העצבים הסומטית"], "answer": 0, "explanation": "מערכת רנין–אנגיוטנסין–אלדוסטרון פועלת דרך הכליות והורמונים ושולטת בנפח הדם לאורך זמן."}, {"q": "מה גורם להפעלת מערכת רנין–אנגיוטנסין–אלדוסטרון?", "options": ["ירידה בזרימת הדם לכליות או גירוי סימפתטי", "עלייה גבוהה בגלוקוז בלבד", "כיווץ שרירי השלד", "עלייה בטמפרטורת הגוף"], "answer": 0, "explanation": "ירידה בזילוח הכלייתי או הפעלה סימפתטית גורמות לכליות להפריש רנין."}, {"q": "איזה איבר מייצר אנגיוטנסינוגן?", "options": ["הכבד", "הכליה", "הלב", "הלבלב"], "answer": 0, "explanation": "הכבד מייצר אנגיוטנסינוגן, שהוא חומר המוצא של המסלול."}, {"q": "איזה חומר מופרש מהכליות בתחילת הפעלת המערכת?", "options": ["רנין", "אלדוסטרון", "אינסולין", "ברדיקינין"], "answer": 0, "explanation": "הכליות מפרישות רנין, שמתחיל את שרשרת התגובות."}, {"q": "מה עושה רנין?", "options": ["הופך אנגיוטנסינוגן לאנגיוטנסין I", "הופך אנגיוטנסין II לאנגיוטנסין I", "חוסם את קולטן AT1", "מפרק אלדוסטרון"], "answer": 0, "explanation": "רנין מבקע אנגיוטנסינוגן ויוצר אנגיוטנסין I."}, {"q": "מה תפקיד האנזים המהפך אנגיוטנסין?", "options": ["המרת אנגיוטנסין I לאנגיוטנסין II", "המרת אלדוסטרון לרנין", "חסימת תעלות סידן", "הגברת הפרשת שתן"], "answer": 0, "explanation": "האנזים המהפך אנגיוטנסין יוצר את אנגיוטנסין II הפעיל."}, {"q": "מהי השפעה ישירה של אנגיוטנסין II על כלי הדם?", "options": ["כיווץ כלי דם", "הרחבת כלי דם", "שיתוק כלי הדם", "אין השפעה"], "answer": 0, "explanation": "אנגיוטנסין II הוא מכווץ כלי דם חזק, ולכן מעלה התנגדות ולחץ דם."}, {"q": "כיצד אנגיוטנסין II מעלה את נפח הדם?", "options": ["באמצעות עידוד הפרשת אלדוסטרון", "באמצעות חסימת רנין", "באמצעות פירוק נתרן", "באמצעות האטת הנשימה"], "answer": 0, "explanation": "אנגיוטנסין II מעודד הפרשת אלדוסטרון, שגורם לשימור נתרן ומים."}, {"q": "מה עושה אלדוסטרון בכליות?", "options": ["מגביר ספיגה חוזרת של נתרן ומים", "מגביר הפרשת נתרן ומים", "מונע יצירת שתן לחלוטין", "מפרק אנגיוטנסין II"], "answer": 0, "explanation": "אלדוסטרון מגדיל שימור נתרן; מים נמשכים אחריו ולכן נפח הדם עולה."}, {"q": "מהי התוצאה הכוללת של הפעלת מערכת רנין–אנגיוטנסין–אלדוסטרון?", "options": ["עלייה בלחץ הדם", "ירידה קבועה בלחץ הדם", "האטת קצב הלב בלבד", "ירידה בהתנגדות כלי הדם"], "answer": 0, "explanation": "המערכת מעלה גם את נפח הדם וגם את כיווץ כלי הדם, ולכן מעלה לחץ דם."}, {"q": "כיצד פועלים מעכבי האנזים המהפך אנגיוטנסין?", "options": ["מונעים יצירת אנגיוטנסין II", "חוסמים ישירות את קולטן AT1", "מפעילים קולטני בטא 1", "מגבירים אלדוסטרון"], "answer": 0, "explanation": "מעכבי האנזים מונעים המרת אנגיוטנסין I לאנגיוטנסין II."}, {"q": "איזו סיומת אופיינית למעכבי האנזים המהפך אנגיוטנסין?", "options": ["פריל", "סרטן", "דיפין", "אולול"], "answer": 0, "explanation": "דוגמאות: רמיפריל ואנלפריל; שמות התרופות נוטים להסתיים ב־פריל."}, {"q": "איזו תופעת לוואי נפוצה של מעכבי האנזים המהפך אנגיוטנסין?", "options": ["שיעול יבש", "עצירות בלבד", "טכיקרדיה קבועה", "הרחבת אישונים"], "answer": 0, "explanation": "עיכוב פירוק ברדיקינין עלול לגרום לשיעול יבש."}, {"q": "מדוע מעכבי האנזים המהפך אנגיוטנסין עלולים לגרום לשיעול יבש?", "options": ["הצטברות ברדיקינין", "ירידה ברנין", "עלייה בפירוק אלדוסטרון", "חסימת קולטני בטא 2"], "answer": 0, "explanation": "האנזים מפרק גם ברדיקינין; עיכובו מעלה את רמת הברדיקינין."}, {"q": "איזו תגובה מסוכנת אך נדירה יכולה להתרחש עם מעכבי האנזים המהפך אנגיוטנסין?", "options": ["אנגיואדמה", "כיווץ אישונים", "ירידה בשמיעה בלבד", "היפוגליקמיה מיידית"], "answer": 0, "explanation": "אנגיואדמה היא תגובה מסוכנת המחייבת טיפול דחוף."}, {"q": "כיצד פועלים חוסמי קולטני אנגיוטנסין II?", "options": ["חוסמים את קולטן AT1", "מונעים יצירת רנין", "חוסמים את האנזים המהפך אנגיוטנסין", "מפעילים אלדוסטרון"], "answer": 0, "explanation": "התרופות מאפשרות יצירת אנגיוטנסין II אך מונעות ממנו לפעול דרך קולטן AT1."}, {"q": "איזו סיומת אופיינית לחוסמי קולטני אנגיוטנסין II?", "options": ["סרטן", "פריל", "דיפין", "זוסין"], "answer": 0, "explanation": "לוסרטן וולסרטן הן דוגמאות לתרופות בעלות הסיומת סרטן."}, {"q": "מדוע חוסמי קולטני אנגיוטנסין II גורמים פחות לשיעול?", "options": ["הם אינם מעלים ברדיקינין באופן משמעותי", "הם מפחיתים קצב לב", "הם חוסמים תעלות סידן", "הם מגבירים הפרשת שתן"], "answer": 0, "explanation": "בניגוד למעכבי האנזים, הם אינם מפריעים למסלול פירוק הברדיקינין."}, {"q": "מהו כלל בטיחות מרכזי לגבי מעכבי האנזים המהפך אנגיוטנסין וחוסמי קולטני אנגיוטנסין II?", "options": ["אסור לשלב ביניהם", "חובה לשלב ביניהם", "מותר רק בילדים", "יש ליטול רק בלילה"], "answer": 0, "explanation": "אין לשלב את שתי הקבוצות, בגלל סיכון מוגבר לפגיעה כלייתית, היפרקלמיה ולחץ דם נמוך."}, {"q": "איזו הפרעה באלקטרוליטים עלולה להתרחש עם טיפול במערכת רנין–אנגיוטנסין–אלדוסטרון?", "options": ["היפרקלמיה", "היפוקלמיה תמיד", "היפרנתרמיה בלבד", "היפוקלצמיה"], "answer": 0, "explanation": "מעכבי האנזים וחוסמי הקולטן עלולים להעלות אשלגן בדם, ולכן יש לעקוב."}, {"q": "באיזה מצב אסור להשתמש במעכבי האנזים המהפך אנגיוטנסין ובחוסמי הקולטן?", "options": ["היריון", "כאב ראש קל", "נזלת", "חום נמוך"], "answer": 0, "explanation": "שתי הקבוצות טרטוגניות ואסורות בהיריון."}, {"q": "מהו מנגנון הפעולה של חוסמי תעלות סידן מסוג דיהידרופירידינים?", "options": ["הרפיית שריר חלק בעורקים והרחבת כלי דם", "הגברת קצב הלב ישירות", "עידוד הפרשת רנין", "הגברת כיווץ כלי הדם"], "answer": 0, "explanation": "חסימת תעלות סידן מסוג L בשריר החלק מפחיתה כיווץ וגורמת להרחבת עורקים."}, {"q": "איזו סיומת אופיינית לחוסמי תעלות סידן מסוג דיהידרופירידינים?", "options": ["דיפין", "פריל", "סרטן", "אולול"], "answer": 0, "explanation": "אמלודיפין וניפדיפין הן דוגמאות נפוצות."}, {"q": "מהי השפעת אמלודיפין על לחץ הדם?", "options": ["הרחבת עורקים והפחתת ההתנגדות הפריפרית", "עלייה ישירה בתפוקת הלב", "הגברת שימור נתרן", "כיווץ עורקים"], "answer": 0, "explanation": "אמלודיפין מרחיב עורקים ולכן מפחית התנגדות פריפרית ולחץ דם."}, {"q": "כיצד פועלים חוסמי בטא על הלב?", "options": ["מורידים קצב לב ועוצמת התכווצות", "מעלים קצב לב", "מרחיבים כלי דם רק באמצעות סידן", "מגבירים אלדוסטרון"], "answer": 0, "explanation": "חסימת בטא 1 בלב מפחיתה קצב ועוצמת התכווצות ולכן מפחיתה תפוקת לב."}, {"q": "כיצד חוסמי בטא משפיעים על מערכת רנין–אנגיוטנסין–אלדוסטרון?", "options": ["מפחיתים הפרשת רנין מהכליה", "מגבירים הפרשת רנין", "מפעילים אלדוסטרון ישירות", "אינם משפיעים כלל"], "answer": 0, "explanation": "חסימת בטא 1 בכליה מפחיתה שחרור רנין ומחלישה את המערכת."}, {"q": "איזו סיומת אופיינית לחוסמי בטא?", "options": ["אולול", "סרטן", "דיפין", "פריל"], "answer": 0, "explanation": "למשל פרופרנולול ומטופרולול."}, {"q": "מדוע פרופרנולול עלול להיות מסוכן בחולה אסתמה?", "options": ["הוא חוסם גם קולטני בטא 2 ועלול לגרום לכיווץ סמפונות", "הוא מגביר ברדיקינין", "הוא מעלה אלדוסטרון", "הוא חוסם תעלות סידן בלבד"], "answer": 0, "explanation": "פרופרנולול אינו סלקטיבי וחוסם גם בטא 2 בדרכי הנשימה."}, {"q": "איזו אזהרה חשובה קיימת בהפסקת חוסמי בטא?", "options": ["יש להפסיק בהדרגה", "יש להפסיק בבת אחת", "אין צורך לעקוב אחר קצב הלב", "יש להכפיל מינון לפני הפסקה"], "answer": 0, "explanation": "הפסקה פתאומית עלולה לגרום לריבאונד של טכיקרדיה ולחץ דם גבוה."}, {"q": "מהו מנגנון הפעולה העיקרי של משתנים בטיפול בלחץ דם?", "options": ["הפחתת נפח הדם", "חסימת קולטן AT1", "הגברת קצב הלב", "כיווץ עורקים"], "answer": 0, "explanation": "משתנים מגבירים הפרשת נתרן ומים, מפחיתים נפח דם ובכך מורידים תפוקת לב."}, {"q": "מהו מנגנון הפעולה של חוסמי אלפא 1?", "options": ["הרחבת כלי דם והפחתת ההתנגדות הפריפרית", "הגברת כיווץ כלי דם", "הגברת שחרור רנין", "חסימת תעלות סידן בלב בלבד"], "answer": 0, "explanation": "חסימת אלפא 1 מונעת כיווץ כלי דם וגורמת להרחבתם."}, {"q": "איזו תופעת לוואי אופיינית לחוסמי אלפא 1, במיוחד במנה הראשונה?", "options": ["לחץ דם תנוחתי", "שיעול יבש", "היפרקלמיה", "כיווץ סמפונות"], "answer": 0, "explanation": "הרחבת כלי הדם עלולה לגרום לירידה חדה בלחץ הדם במעבר לעמידה."}, {"q": "כיצד פועלים אגוניסטים מרכזיים לאלפא 2, כגון קלונידין?", "options": ["מפחיתים פעילות סימפתטית מרכזית", "מגבירים פעילות סימפתטית", "חוסמים תעלות סידן", "מעלים נפח דם"], "answer": 0, "explanation": "הפעלת אלפא 2 במוח מפחיתה יציאה סימפתטית וכך מורידה לחץ דם."}, {"q": "מהי מטרה טיפולית מרכזית באי־ספיקת לב?", "options": ["הפחתת עומס קדם, עומס אחר וקצב לב ומניעת שינוי מבני", "העלאת כל המדדים תמיד", "הגדלת נפח הדם", "הגברת כיווץ כלי הדם"], "answer": 0, "explanation": "הטיפול מבקש להקל על עבודת הלב ולמנוע שינוי מבני מזיק לאורך זמן."}, {"q": "מהו שינוי מבני של הלב?", "options": ["שינוי מזיק במבנה ובתפקוד שריר הלב לאורך זמן", "עלייה זמנית בלבד בקצב הלב", "הרחבת כלי דם רגעית", "ירידה חד־פעמית בלחץ הדם"], "answer": 0, "explanation": "שינוי מבני מתאר הסתגלות כרונית של שריר הלב, שעלולה להחמיר אי־ספיקת לב."}, {"q": "איזו קבוצת תרופות מסייעת להפחית עומס קדם באמצעות הורדת נפח נוזלים?", "options": ["משתנים", "חוסמי בטא בלבד", "חוסמי אלפא 2 בלבד", "חוסמי תעלות סידן בלבד"], "answer": 0, "explanation": "משתנים מפחיתים נתרן ומים ולכן מקטינים נפח דם ועומס קדם."}, {"q": "איזו קבוצת תרופות מפחיתה בעיקר את קצב הלב והצריכה המטבולית של הלב?", "options": ["חוסמי בטא", "משתנים", "חוסמי אלפא 1", "חוסמי קולטני אנגיוטנסין II בלבד"], "answer": 0, "explanation": "חוסמי בטא מפחיתים קצב לב ועוצמת התכווצות."}];
+const QUESTIONS_PER_ROUND=20;
+let questions=[],index=0,score=0,answered=false,mistakes=[];
+
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}}
+function prepare(){
+  questions=JSON.parse(JSON.stringify(bank));
+  shuffle(questions);
+  questions=questions.slice(0,Math.min(QUESTIONS_PER_ROUND,questions.length));
+  questions.forEach(q=>{const correct=q.options[q.answer];shuffle(q.options);q.answer=q.options.indexOf(correct)});
+  index=0;score=0;answered=false;mistakes=[];renderQuestion();
+}
+function startScreen(){
+  bar.style.width='0%';status.textContent='מוכן להתחלה';
+  card.innerHTML=`<section class="intro"><div class="kicker">תרגול אינטראקטיבי</div><h1>לחץ דם, תרופות ואי־ספיקת לב</h1><p>בכל סבב יוצגו 20 שאלות אקראיות מתוך מאגר של ${bank.length} שאלות. אחרי כל תשובה יוצגו הפתרון והסבר.</p><button class="ctrl primary" onclick="prepare()">התחלת התרגול</button><div class="note">סדר השאלות והתשובות משתנה בכל סבב</div></section>`;
+}
+function renderQuestion(){
+  answered=false;const q=questions[index],letters=['א','ב','ג','ד'];
+  status.textContent=`שאלה ${index+1} מתוך ${questions.length} | ציון: ${score}`;
+  bar.style.width=`${index/questions.length*100}%`;
+  card.innerHTML=`<div class="kicker">שאלה ${index+1} מתוך ${questions.length}</div><h1>${q.q}</h1><div class="options">${q.options.map((o,i)=>`<button class="option" onclick="answer(${i})">${letters[i]}. ${o}</button>`).join('')}</div><div id="feedback" class="feedback"></div><div class="actions"><button class="ctrl secondary" onclick="startScreen()">חזרה להתחלה</button><button id="next" class="ctrl primary" onclick="nextQuestion()" disabled>לשאלה הבאה</button></div>`;
+}
+function answer(choice){
+  if(answered)return;answered=true;
+  const q=questions[index],buttons=[...document.querySelectorAll('.option')];
+  buttons.forEach((b,i)=>{b.disabled=true;if(i===q.answer)b.classList.add('correct')});
+  const ok=choice===q.answer;
+  if(ok)score++;else{buttons[choice].classList.add('wrong');mistakes.push({q:q.q,correct:q.options[q.answer],explanation:q.explanation})}
+  feedback.style.display='block';
+  feedback.innerHTML=`<strong>${ok?'נכון מאוד!':'לא נכון'}</strong><br>${q.explanation}`;
+  next.disabled=false;
+  status.textContent=`שאלה ${index+1} מתוך ${questions.length} | ציון: ${score}`;
+  bar.style.width=`${(index+1)/questions.length*100}%`;
+}
+function nextQuestion(){if(!answered)return;index++;index>=questions.length?finish():renderQuestion()}
+function finish(){
+  const pct=Math.round(score/questions.length*100);
+  const msg=pct>=90?'מצוין! שליטה חזקה מאוד בחומר.':pct>=75?'טוב מאוד! נשארה חזרה קצרה.':pct>=60?'בסדר גמור, כדאי לעבור על הטעויות.':'כדאי לחזור על המצגת ולנסות שוב.';
+  status.textContent='התרגול הסתיים';bar.style.width='100%';
+  const review=mistakes.length?`<div class="mistakes"><h2>חזרה על טעויות</h2>${mistakes.map(m=>`<div class="mistake"><strong>${m.q}</strong><br>התשובה הנכונה: ${m.correct}<br>${m.explanation}</div>`).join('')}</div>`:'<p>לא היו טעויות בסבב הזה.</p>';
+  card.innerHTML=`<section class="finish"><div class="kicker">סיום התרגול</div><h1>כל הכבוד!</h1><div class="big-score">${score}/${questions.length}</div><p>${msg}</p><button class="ctrl primary" onclick="prepare()">סבב חדש</button>${review}</section>`;
+}
+startScreen();
+</script><a class="menu-home" href="index.html">↩ חזרה לתפריט</a>
+</body></html>

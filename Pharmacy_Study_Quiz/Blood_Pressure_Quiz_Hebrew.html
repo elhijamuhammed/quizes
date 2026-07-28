@@ -1,0 +1,500 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>חידון לחץ דם ותרופות</title>
+
+  <style>
+    :root{
+      --bg:#07111f;
+      --card:#101f34;
+      --text:#f7fbff;
+      --muted:#a8bad0;
+      --blue:#55c7ff;
+      --gold:#ffbd59;
+      --green:#2ecc71;
+      --red:#ff6672;
+      --border:rgba(255,255,255,.12);
+    }
+
+    *{
+      box-sizing:border-box;
+    }
+
+    body{
+      margin:0;
+      min-height:100vh;
+      font-family:Arial,sans-serif;
+      color:var(--text);
+      background:
+        radial-gradient(circle at 10% 10%,rgba(85,199,255,.12),transparent 28%),
+        radial-gradient(circle at 90% 90%,rgba(255,189,89,.10),transparent 28%),
+        var(--bg);
+    }
+
+    .app{
+      max-width:950px;
+      margin:auto;
+      padding:78px 20px 24px;
+    }
+
+    .topbar{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:14px;
+      margin-bottom:16px;
+    }
+
+    .brand{
+      font-weight:900;
+      font-size:18px;
+    }
+
+    .score{
+      color:var(--muted);
+      font-weight:700;
+    }
+
+    .progress{
+      height:10px;
+      background:#081522;
+      border-radius:999px;
+      overflow:hidden;
+      margin-bottom:18px;
+    }
+
+    .progress > div{
+      height:100%;
+      width:0;
+      background:linear-gradient(90deg,var(--blue),var(--gold));
+      transition:.35s;
+    }
+
+    .slide{
+      min-height:620px;
+      background:linear-gradient(145deg,rgba(16,31,52,.98),rgba(11,24,41,.98));
+      border:1px solid var(--border);
+      border-radius:28px;
+      padding:clamp(22px,5vw,46px);
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+      box-shadow:0 24px 70px rgba(0,0,0,.35);
+    }
+
+    .kicker{
+      color:var(--gold);
+      font-weight:900;
+      margin-bottom:12px;
+    }
+
+    h1{
+      font-size:clamp(25px,4vw,40px);
+      line-height:1.45;
+      margin:0 0 25px;
+    }
+
+    .start,
+    .finish{
+      text-align:center;
+    }
+
+    .start p,
+    .finish p{
+      color:var(--muted);
+      font-size:18px;
+      line-height:1.8;
+    }
+
+    .options{
+      display:grid;
+      gap:13px;
+    }
+
+    .option{
+      border:1px solid var(--border);
+      background:#0b192b;
+      color:var(--text);
+      padding:16px 18px;
+      border-radius:15px;
+      text-align:right;
+      font-size:17px;
+      line-height:1.55;
+      cursor:pointer;
+      transition:.2s;
+    }
+
+    .option:hover:not(:disabled){
+      transform:translateY(-2px);
+      border-color:var(--blue);
+      background:#10223b;
+    }
+
+    .option.correct{
+      border-color:var(--green);
+      background:rgba(46,204,113,.17);
+    }
+
+    .option.wrong{
+      border-color:var(--red);
+      background:rgba(255,102,114,.17);
+    }
+
+    .option:disabled{
+      cursor:default;
+    }
+
+    .feedback{
+      display:none;
+      margin-top:22px;
+      border-radius:18px;
+      padding:18px 20px;
+      line-height:1.7;
+      background:rgba(255,255,255,.06);
+      border:1px solid var(--border);
+    }
+
+    .feedback strong{
+      display:block;
+      font-size:19px;
+      margin-bottom:5px;
+    }
+
+    .actions{
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      margin-top:22px;
+      flex-wrap:wrap;
+    }
+
+    button.ctrl{
+      border:0;
+      border-radius:13px;
+      padding:13px 19px;
+      font-size:16px;
+      font-weight:900;
+      cursor:pointer;
+      transition:.2s;
+    }
+
+    button.ctrl:hover:not(:disabled){
+      transform:translateY(-2px);
+    }
+
+    .primary{
+      background:var(--blue);
+      color:#06111e;
+    }
+
+    .secondary{
+      background:#162a45;
+      color:var(--text);
+      border:1px solid var(--border) !important;
+    }
+
+    button.ctrl:disabled{
+      opacity:.45;
+      cursor:not-allowed;
+    }
+
+    .big-score{
+      font-size:76px;
+      font-weight:950;
+      color:var(--gold);
+      margin:12px 0;
+    }
+
+.menu-home{
+  position:fixed;
+  left:18px;
+  bottom:18px;
+  z-index:9999;
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  padding:11px 15px;
+  border-radius:12px;
+  background:#162a45;
+  color:#f7fbff;
+  border:1px solid rgba(255,255,255,.16);
+  text-decoration:none;
+  font-family:Arial,sans-serif;
+  font-weight:800;
+  box-shadow:0 10px 30px rgba(0,0,0,.3);
+}
+.menu-home:hover{transform:translateY(-2px)}
+@media(max-width:600px){.menu-home{left:10px;bottom:10px;padding:9px 12px;font-size:14px}}
+  </style>
+</head>
+
+<body>
+  <a class="menu-home" href="index.html">← חזרה לתפריט</a>
+
+  <div class="app">
+    <div class="topbar">
+      <div class="brand">חידון לחץ דם ותרופות</div>
+      <div class="score" id="scoreText">מוכן להתחלה</div>
+    </div>
+
+    <div class="progress">
+      <div id="progressBar"></div>
+    </div>
+
+    <main class="slide" id="slide"></main>
+  </div>
+
+  <script>
+    const originalQuestions = [
+      {
+        q: "על פי החומר הנלמד, מהי המשוואה המגדירה את לחץ הדם?",
+        options: ["BP = CO × PVR", "BP = HR × SV", "BP = PVR ÷ CO", "BP = CO + PVR"],
+        answer: 0,
+        explanation: "לחץ הדם נקבע על ידי מכפלת תפוקת הלב בתנגודת כלי הדם ההיקפיים."
+      },
+      {
+        q: "איזה מהגורמים הבאים משפיע ישירות על עומס קדם?",
+        options: [
+          "נפח הדם החוזר ללב",
+          "מידת ההתנגדות שהלב צריך לעבוד כנגדה",
+          "קצב פעימות הלב בדקה",
+          "חוזק ההתכווצות של שריר הלב"
+        ],
+        answer: 0,
+        explanation: "עומס קדם מתאר את מידת מילוי החדרים בסוף הדיאסטולה ולכן הוא מושפע מנפח הדם החוזר ללב."
+      },
+      {
+        q: "מהו המנגנון העיקרי של רפלקס קולטני הלחץ בתגובה לעלייה פתאומית בלחץ הדם?",
+        options: [
+          "הפרשת אלדוסטרון מהירה",
+          "כיווץ כלי דם היקפיים",
+          "הגברת הפעילות הפאראסימפתטית להורדת קצב הלב",
+          "הפעלת מערכת רנין–אנגיוטנסין–אלדוסטרון בכליות"
+        ],
+        answer: 2,
+        explanation: "עלייה בלחץ הדם מגבירה פעילות פאראסימפתטית ומפחיתה פעילות סימפתטית, וכך מורידה את קצב הלב ולחץ הדם."
+      },
+      {
+        q: "במסלול רנין–אנגיוטנסין–אלדוסטרון, איזה אנזים אחראי להמרת אנגיוטנסין I לאנגיוטנסין II?",
+        options: ["האנזים המהפך אנגיוטנסין", "קולטן בטא 1", "אלדוסטרון", "רנין"],
+        answer: 0,
+        explanation: "האנזים המהפך אנגיוטנסין ממיר אנגיוטנסין I לאנגיוטנסין II הפעיל."
+      },
+      {
+        q: "מדוע מטופלים הנוטלים מעכבי האנזים המהפך אנגיוטנסין נוטים לסבול משיעול יבש?",
+        options: [
+          "כתוצאה מירידה ברמות האשלגן בדם",
+          "בשל הצטברות נוזלים בריאות",
+          "עקב מניעת פירוקו של ברדיקינין",
+          "בגלל כיווץ ישיר של הסמפונות"
+        ],
+        answer: 2,
+        explanation: "האנזים מפרק גם ברדיקינין. כאשר מעכבים אותו, ברדיקינין מצטבר ועלול לגרום לשיעול יבש."
+      },
+      {
+        q: "מהו ההבדל העיקרי בין מעכבי האנזים המהפך אנגיוטנסין לבין חוסמי קולטני אנגיוטנסין II?",
+        options: [
+          "מעכבי האנזים פועלים על הכליות בלבד",
+          "חוסמי הקולטן מגבירים ייצור אנגיוטנסין I",
+          "רק מעכבי האנזים אסורים בהיריון",
+          "חוסמי הקולטן חוסמים ישירות את קולטן AT1 ואינם מעלים ברדיקינין"
+        ],
+        answer: 3,
+        explanation: "חוסמי הקולטן חוסמים ישירות את AT1 ואינם מעכבים פירוק ברדיקינין, ולכן גורמים פחות לשיעול."
+      },
+      {
+        q: "תרופות ממשפחת הדיהידרופירידינים, כגון אמלודיפין, פועלות בעיקר על:",
+        options: [
+          "קצב הלב וההולכה החשמלית בלב",
+          "חסימת קולטני בטא 1 בלב",
+          "שריר חלק בדפנות העורקים וגורמות להרחבת כלי דם",
+          "מניעת ספיגה חוזרת של נתרן בכליות"
+        ],
+        answer: 2,
+        explanation: "אמלודיפין חוסם תעלות סידן בעיקר בשריר החלק של כלי הדם, מרחיב עורקים ומפחית תנגודת היקפית."
+      },
+      {
+        q: "מהי הסכנה בשימוש בחוסמי בטא לא־סלקטיביים, כגון פרופרנולול, אצל חולי אסתמה?",
+        options: [
+          "חסימת קולטני בטא 2 עלולה לגרום לכיווץ סמפונות",
+          "הם מנטרלים את השפעת משאפי הסטרואידים",
+          "הם גורמים לעלייה בלחץ הדם הריאתי",
+          "הם מעודדים הפרשת ליחה מרובה"
+        ],
+        answer: 0,
+        explanation: "חסימת קולטני בטא 2 בדרכי הנשימה עלולה לגרום לכיווץ סמפונות ולהחמיר אסתמה."
+      },
+      {
+        q: "איזו אזהרה קריטית מופיעה בנוגע להפסקת טיפול בחוסמי בטא?",
+        options: [
+          "חובה ליטול רק על קיבה מלאה",
+          "יש להפסיק בהדרגה כדי למנוע טכיקרדיה ועלייה חדה בלחץ הדם",
+          "יש להפסיק מיד אם מופיעה עייפות",
+          "אין ליטול לפני השינה"
+        ],
+        answer: 1,
+        explanation: "הפסקה פתאומית עלולה לגרום לתגובת ריבאונד, ולכן מפסיקים חוסמי בטא בהדרגה."
+      },
+      {
+        q: "מהו המאפיין הייחודי של חוסמי אלפא 1, כגון דוקסזוסין, מבחינת תופעות לוואי?",
+        options: [
+          "סיכון מוגבר ללחץ דם תנוחתי, במיוחד במנה הראשונה",
+          "עלייה חריגה ברמות הסוכר בדם",
+          "היפרקלמיה מסוכנת",
+          "גרימת שיעול יבש טורדני"
+        ],
+        answer: 0,
+        explanation: "חוסמי אלפא 1 עלולים לגרום לירידה חדה בלחץ הדם במעבר לעמידה, במיוחד לאחר המנה הראשונה."
+      }
+    ];
+
+    let questions = [];
+    let index = 0;
+    let score = 0;
+    let answered = false;
+
+    const slide = document.getElementById("slide");
+    const scoreText = document.getElementById("scoreText");
+    const progressBar = document.getElementById("progressBar");
+
+    function shuffle(array){
+      for(let i = array.length - 1; i > 0; i--){
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+    }
+
+    function startQuiz(){
+      questions = JSON.parse(JSON.stringify(originalQuestions));
+      shuffle(questions);
+
+      questions.forEach((question) => {
+        const correctAnswer = question.options[question.answer];
+        shuffle(question.options);
+        question.answer = question.options.indexOf(correctAnswer);
+      });
+
+      index = 0;
+      score = 0;
+      answered = false;
+
+      renderQuestion();
+    }
+
+    function renderStart(){
+      progressBar.style.width = "0%";
+      scoreText.textContent = "מוכן להתחלה";
+
+      slide.innerHTML = `
+        <section class="start">
+          <div class="kicker">תרגול אינטראקטיבי</div>
+          <h1>לחץ דם ותרופות להורדת לחץ דם</h1>
+          <p>עשר שאלות עם משוב והסבר לאחר כל תשובה.</p>
+          <button class="ctrl primary" onclick="startQuiz()">התחלת התרגול</button>
+        </section>
+      `;
+    }
+
+    function renderQuestion(){
+      answered = false;
+
+      const question = questions[index];
+      const letters = ["א", "ב", "ג", "ד"];
+
+      scoreText.textContent = `שאלה ${index + 1} מתוך ${questions.length} | ציון: ${score}`;
+      progressBar.style.width = `${(index / questions.length) * 100}%`;
+
+      slide.innerHTML = `
+        <div class="kicker">שאלה ${index + 1} מתוך ${questions.length}</div>
+        <h1>${question.q}</h1>
+
+        <div class="options">
+          ${question.options.map((option, optionIndex) => `
+            <button class="option" onclick="answer(${optionIndex})">
+              ${letters[optionIndex]}. ${option}
+            </button>
+          `).join("")}
+        </div>
+
+        <div class="feedback" id="feedback"></div>
+
+        <div class="actions">
+          <button class="ctrl secondary" onclick="renderStart()">התחלה מחדש</button>
+          <button class="ctrl primary" id="nextBtn" onclick="nextQuestion()" disabled>
+            לשאלה הבאה
+          </button>
+        </div>
+      `;
+    }
+
+    function answer(choice){
+      if(answered) return;
+
+      answered = true;
+
+      const question = questions[index];
+      const optionButtons = [...document.querySelectorAll(".option")];
+      const feedback = document.getElementById("feedback");
+      const nextButton = document.getElementById("nextBtn");
+
+      optionButtons.forEach((button, buttonIndex) => {
+        button.disabled = true;
+
+        if(buttonIndex === question.answer){
+          button.classList.add("correct");
+        }
+      });
+
+      const isCorrect = choice === question.answer;
+
+      if(isCorrect){
+        score++;
+      }else{
+        optionButtons[choice].classList.add("wrong");
+      }
+
+      feedback.style.display = "block";
+      feedback.innerHTML = `
+        <strong>${isCorrect ? "נכון מאוד!" : "לא נכון"}</strong>
+        ${question.explanation}
+      `;
+
+      nextButton.disabled = false;
+
+      scoreText.textContent = `שאלה ${index + 1} מתוך ${questions.length} | ציון: ${score}`;
+      progressBar.style.width = `${((index + 1) / questions.length) * 100}%`;
+    }
+
+    function nextQuestion(){
+      if(!answered) return;
+
+      index++;
+
+      if(index >= questions.length){
+        renderFinish();
+      }else{
+        renderQuestion();
+      }
+    }
+
+    function renderFinish(){
+      scoreText.textContent = "התרגול הסתיים";
+      progressBar.style.width = "100%";
+
+      slide.innerHTML = `
+        <section class="finish">
+          <div class="kicker">סיום התרגול</div>
+          <h1>כל הכבוד!</h1>
+          <div class="big-score">${score}/${questions.length}</div>
+          <p>אפשר להתחיל שוב ולקבל סדר שאלות ותשובות חדש.</p>
+          <button class="ctrl primary" onclick="startQuiz()">תרגול חדש</button>
+        </section>
+      `;
+    }
+
+    renderStart();
+  </script>
+</body>
+</html>
