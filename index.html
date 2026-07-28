@@ -1,34 +1,154 @@
 <!doctype html>
 <html lang="he" dir="rtl">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>חידון אינטראקטיבי – מערכת העצבים האוטונומית</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>מרכז תרגול – פרמקולוגיה</title>
 <style>
-:root{--bg:#07111f;--card:#101f34;--text:#f7fbff;--muted:#a8bad0;--blue:#55c7ff;--gold:#ffbd59;--green:#2ecc71;--red:#ff6672;--border:rgba(255,255,255,.12)}
-*{box-sizing:border-box} body{margin:0;font-family:Arial,sans-serif;color:var(--text);background:radial-gradient(circle at 10% 10%,rgba(85,199,255,.15),transparent 28%),radial-gradient(circle at 90% 90%,rgba(255,189,89,.12),transparent 28%),var(--bg);min-height:100vh}
-.app{max-width:950px;margin:auto;padding:20px} .topbar{display:flex;justify-content:space-between;gap:14px;align-items:center;margin-bottom:16px} .brand{font-weight:900;font-size:18px} .score{color:var(--muted);font-weight:700}
-.progress{height:10px;background:#081522;border-radius:999px;overflow:hidden;margin-bottom:18px} .progress>div{height:100%;width:0;background:linear-gradient(90deg,var(--blue),var(--gold));transition:.35s}
-.slide{min-height:620px;background:linear-gradient(145deg,rgba(16,31,52,.98),rgba(13,25,43,.98));border:1px solid var(--border);border-radius:28px;padding:clamp(22px,5vw,46px);box-shadow:0 28px 80px rgba(0,0,0,.38);display:flex;flex-direction:column;justify-content:center}
-.kicker{color:var(--gold);font-weight:900;margin-bottom:12px} h1{font-size:clamp(25px,4vw,40px);line-height:1.45;margin:0 0 25px} .options{display:grid;gap:13px}
-.option{border:1px solid var(--border);background:#0b192b;color:var(--text);padding:16px 18px;border-radius:15px;text-align:right;font-size:17px;line-height:1.5;cursor:pointer;transition:.2s}
-.option:hover:not(:disabled){transform:translateY(-2px);border-color:var(--blue);background:#10223b} .option.correct{border-color:var(--green);background:rgba(46,204,113,.17)} .option.wrong{border-color:var(--red);background:rgba(255,102,114,.17)} .option:disabled{cursor:default}
-.feedback{display:none;margin-top:22px;border-radius:18px;padding:18px 20px;line-height:1.7;background:rgba(255,255,255,.06);border:1px solid var(--border)} .feedback.good{border-color:rgba(46,204,113,.55)} .feedback.bad{border-color:rgba(255,102,114,.55)} .feedback-title{font-weight:900;font-size:19px;margin-bottom:6px}
-.actions{display:flex;justify-content:space-between;gap:12px;margin-top:22px;flex-wrap:wrap} button.ctrl{border:0;border-radius:13px;padding:13px 19px;font-size:16px;font-weight:900;cursor:pointer} .primary{background:var(--blue);color:#06111e} .secondary{background:#162a45;color:var(--text);border:1px solid var(--border)!important} button.ctrl:disabled{opacity:.45;cursor:not-allowed}
-.start,.finish{text-align:center} .start h1,.finish h1{font-size:clamp(32px,6vw,58px)} .start p,.finish p{color:var(--muted);font-size:18px;line-height:1.8} .big-score{font-size:76px;font-weight:950;color:var(--gold);margin:12px 0} .small-note{color:var(--muted);font-size:14px;margin-top:18px}
-@media(max-width:600px){.app{padding:10px}.slide{min-height:calc(100vh - 80px);border-radius:20px;padding:20px}.option{font-size:16px;padding:14px}.topbar{font-size:14px}}
-</style></head>
-<body><div class="app"><div class="topbar"><div class="brand">חידון אינטראקטיבי – מערכת העצבים האוטונומית</div><div class="score" id="scoreText">מוכן להתחלה</div></div><div class="progress"><div id="progressBar"></div></div><main class="slide" id="slide"></main></div>
-<script>
-const originalQuestions=[{"q": "מהו תפקידה המרכזי של מערכת העצבים המרכזית?", "options": ["להעביר הורמונים דרך הדם בלבד", "לעבד מידע ולתאם תגובות של הגוף", "לייצר תאי דם אדומים", "לפרק מזון במערכת העיכול"], "answer": 1, "explanation": "מערכת העצבים המרכזית, הכוללת את המוח וחוט השדרה, אחראית לעיבוד מידע ולתיאום תגובות."}, {"q": "אילו מבנים נכללים במערכת העצבים המרכזית?", "options": ["המוח וחוט השדרה", "העצבים ההיקפיים בלבד", "הלב וכלי הדם", "הגנגליונים בלבד"], "answer": 0, "explanation": "מערכת העצבים המרכזית מורכבת מהמוח ומחוט השדרה."}, {"q": "מה כוללת מערכת העצבים ההיקפית?", "options": ["רק את המוח", "רק את חוט השדרה", "את העצבים המחברים בין מערכת העצבים המרכזית לשאר הגוף", "רק את מערכת הנשימה"], "answer": 2, "explanation": "מערכת העצבים ההיקפית כוללת את העצבים שמחוץ למוח ולחוט השדרה ומקשרת אותם לגוף."}, {"q": "איזו מערכת שולטת בעיקר בפעולות רצוניות של שרירי השלד?", "options": ["המערכת הסומטית", "המערכת הפאראסימפתטית", "המערכת האנדוקרינית", "המערכת הסימפתטית בלבד"], "answer": 0, "explanation": "המערכת הסומטית שולטת בעיקר בתנועות רצוניות של שרירי השלד."}, {"q": "מהו תפקידה הכללי של מערכת העצבים האוטונומית?", "options": ["שליטה בפעולות רצוניות בלבד", "שליטה בתפקודים לא-רצוניים של איברים פנימיים", "יצירת עצמות", "ייצור נוגדנים"], "answer": 1, "explanation": "מערכת העצבים האוטונומית מווסתת תפקודים לא-רצוניים כמו קצב לב, נשימה ועיכול."}, {"q": "איזו תגובה אופיינית למערכת הסימפתטית?", "options": ["מנוחה ועיכול", "הילחם או ברח", "שינה עמוקה בלבד", "ירידה כללית בערנות"], "answer": 1, "explanation": "המערכת הסימפתטית מכינה את הגוף למצבי מאמץ או סכנה – הילחם או ברח."}, {"q": "איזו תגובה אופיינית למערכת הפאראסימפתטית?", "options": ["הילחם או ברח", "הגברת מתח שרירי השלד בלבד", "מנוחה ועיכול", "הפסקת פעילות מערכת העיכול"], "answer": 2, "explanation": "המערכת הפאראסימפתטית מקדמת מנוחה, עיכול ושימור אנרגיה."}, {"q": "מה פירוש המושג הומאוסטזיס בהקשר של המערכת האוטונומית?", "options": ["שמירה על איזון פנימי בגוף", "הפסקת כל הפעילות העצבית", "עלייה קבועה בלחץ הדם", "ייצור הורמונים בלבד"], "answer": 0, "explanation": "שתי זרועות מערכת העצבים האוטונומית פועלות יחד לשמירה על איזון פנימי – הומאוסטזיס."}, {"q": "כיצד משפיעה המערכת הסימפתטית על הלב בדרך כלל?", "options": ["מאטה את קצב הלב", "מגבירה קצב ועוצמת התכווצות", "עוצרת את זרימת הדם", "אינה משפיעה על הלב"], "answer": 1, "explanation": "המערכת הסימפתטית מגבירה את קצב הלב ואת עוצמת ההתכווצות."}, {"q": "כיצד משפיעה המערכת הפאראסימפתטית על הלב בדרך כלל?", "options": ["מגבירה את קצב הלב מאוד", "מאטה את קצב הלב", "מגדילה את נפח הריאות", "גורמת להפרשת אדרנלין"], "answer": 1, "explanation": "המערכת הפאראסימפתטית, בעיקר דרך עצב הואגוס, מאטה את קצב הלב."}, {"q": "מהי השפעת המערכת הסימפתטית על דרכי הנשימה?", "options": ["כיווץ הסמפונות", "הרחבת הסמפונות", "הפסקת הנשימה", "אין כל השפעה"], "answer": 1, "explanation": "במצבי מאמץ המערכת הסימפתטית מרחיבה את דרכי הנשימה כדי לשפר כניסת אוויר."}, {"q": "מהי השפעת המערכת הפאראסימפתטית על מערכת העיכול?", "options": ["עיכוב תנועתיות והפרשות", "הגברת תנועתיות והפרשות", "הפסקת ספיגת המזון", "פירוק שרירי המעי"], "answer": 1, "explanation": "המערכת הפאראסימפתטית מעודדת עיכול, תנועתיות והפרשות."}, {"q": "מהי השפעת המערכת הסימפתטית על מערכת העיכול?", "options": ["הגברת הפרשות ותנועתיות", "עיכוב הפרשות ותנועתיות", "אין השפעה", "ייצור אינסולין בלבד"], "answer": 1, "explanation": "במצבי הילחם או ברח המערכת הסימפתטית מפחיתה פעילות עיכול."}, {"q": "מהי השפעת המערכת הפאראסימפתטית על שלפוחית השתן?", "options": ["עידוד התרוקנות", "עיכוב התרוקנות", "הפסקת יצירת שתן", "הגברת אדרנלין"], "answer": 0, "explanation": "המערכת הפאראסימפתטית מסייעת בכיווץ שריר השלפוחית ובהתרוקנות."}, {"q": "מהי השפעת המערכת הסימפתטית על שלפוחית השתן?", "options": ["עידוד מיידי של התרוקנות", "עיכוב התרוקנות", "הגברת ספיגת מים בכליה בלבד", "אין השפעה עצבית"], "answer": 1, "explanation": "המערכת הסימפתטית תומכת באגירת שתן ומעכבת התרוקנות."}, {"q": "איזו תגובה מתרחשת באישון בעקבות הפעלה סימפתטית?", "options": ["מיוזיס (כיווץ האישון)", "מידריאזיס (הרחבת האישון)", "הפסקת תגובת האישון", "שינוי צבע הקשתית"], "answer": 1, "explanation": "הפעלה סימפתטית גורמת ל-מידריאזיס (הרחבת האישון), כלומר הרחבת האישון."}, {"q": "איזו תגובה מתרחשת באישון בעקבות הפעלה פאראסימפתטית?", "options": ["מידריאזיס (הרחבת האישון)", "מיוזיס (כיווץ האישון)", "שיתוק מלא של העין", "הרחבת כלי הדם בלבד"], "answer": 1, "explanation": "הפעלה פאראסימפתטית גורמת ל-מיוזיס (כיווץ האישון), כלומר כיווץ האישון."}, {"q": "מהו גנגליון במערכת האוטונומית?", "options": ["שריר חלק", "תחנת מעבר עצבית מחוץ למערכת העצבים המרכזית", "בלוטה אנדוקרינית", "חלק מהעצם"], "answer": 1, "explanation": "גנגליון הוא צבר גופי תאי עצב מחוץ למערכת העצבים המרכזית המשמש תחנת מעבר."}, {"q": "כמה נוירונים כוללת בדרך כלל השרשרת המוטורית האוטונומית ממערכת העצבים המרכזית לאיבר?", "options": ["נוירון אחד בלבד", "שני נוירונים: פרה-גנגליוני ופוסט-גנגליוני", "שלושה נוירונים תחושתיים בלבד", "ארבעה נוירונים"], "answer": 1, "explanation": "בדרך כלל יש נוירון פרה-גנגליוני ונוירון פוסט-גנגליוני."}, {"q": "מהו מקור היציאה של המערכת הסימפתטית?", "options": ["מוצא מוחי־עצי", "מוצא חזי־מותני", "צווארי בלבד", "עצי בלבד"], "answer": 1, "explanation": "המערכת הסימפתטית יוצאת מאזורי החזה והמותן – מוצא חזי־מותני."}, {"q": "מהו מקור היציאה של המערכת הפאראסימפתטית?", "options": ["מוצא חזי־מותני", "מוצא מוחי־עצי", "מותני בלבד", "עצבים סומטיים בלבד"], "answer": 1, "explanation": "המערכת הפאראסימפתטית יוצאת מגזע המוח ומהאזור הסקרלי – מוצא מוחי־עצי."}, {"q": "מה מאפיין את הסיבים הפרה-גנגליוניים במערכת הסימפתטית?", "options": ["ארוכים מאוד", "קצרים יחסית", "אינם קיימים", "מגיעים ישירות לשריר השלד"], "answer": 1, "explanation": "במערכת הסימפתטית הגנגליונים קרובים לחוט השדרה ולכן הסיב הפרה-גנגליוני קצר."}, {"q": "מה מאפיין את הסיבים הפוסט-גנגליוניים במערכת הסימפתטית?", "options": ["קצרים יחסית", "ארוכים יחסית", "אינם מיאליניים תמיד במערכת הסומטית", "מגיעים רק למוח"], "answer": 1, "explanation": "הגנגליונים הסימפתטיים קרובים לחוט השדרה, ולכן הסיבים הפוסט-גנגליוניים ארוכים."}, {"q": "מה מאפיין את הסיבים הפרה-גנגליוניים במערכת הפאראסימפתטית?", "options": ["קצרים", "ארוכים", "חסרי אקסון", "מגיעים לשרירי שלד בלבד"], "answer": 1, "explanation": "הגנגליונים הפאראסימפתטיים קרובים לאיבר המטרה ולכן הסיב הפרה-גנגליוני ארוך."}, {"q": "מהו יחס הפיצול האופייני במערכת הסימפתטית לפי המצגת?", "options": ["1:1 בלבד", "כ-1:20", "20:1 לכיוון הפוך", "אין פיצול"], "answer": 1, "explanation": "לנוירון פרה-גנגליוני סימפתטי יכולה להיות הסתעפות לכ-20 נוירונים פוסט-גנגליוניים."}, {"q": "מהו יחס הפיצול האופייני במערכת הפאראסימפתטית?", "options": ["פיזור רחב מאוד של 1:20", "יחס ממוקד יותר, לעיתים קרובות קרוב ל-1:1", "אין נוירון פוסט-גנגליוני", "1:100"], "answer": 1, "explanation": "המערכת הפאראסימפתטית פועלת באופן ממוקד יותר ופחות מפושט."}, {"q": "איזה נוירוטרנסמיטר משתחרר מכל הסיבים הפרה-גנגליוניים במערכת האוטונומית?", "options": ["נוראדרנלין", "אצטילכולין (אצטילכולין)", "דופמין", "סרוטונין"], "answer": 1, "explanation": "גם במערכת הסימפתטית וגם בפאראסימפתטית, הסיב הפרה-גנגליוני משחרר אצטילכולין."}, {"q": "לאיזה סוג קולטן נקשר אצטילכולין בגנגליונים האוטונומיים?", "options": ["קולטן מוסקריני", "קולטן ניקוטיני", "קולטן אלפא-1", "קולטן בטא-2"], "answer": 1, "explanation": "בגנגליונים האוטונומיים אצטילכולין נקשר לקולטנים ניקוטיניים."}, {"q": "איזה נוירוטרנסמיטר משתחרר בדרך כלל מהסיב הפוסט-גנגליוני הפאראסימפתטי?", "options": ["אצטילכולין", "נוראדרנלין", "אדרנלין", "דופמין"], "answer": 0, "explanation": "הסיבים הפוסט-גנגליוניים הפאראסימפתטיים משחררים אצטילכולין."}, {"q": "לאילו קולטנים נקשר אצטילכולין באיבר המטרה של המערכת הפאראסימפתטית?", "options": ["קולטנים ניקוטיניים בלבד", "קולטנים מוסקריניים", "קולטני אלפא בלבד", "קולטני בטא בלבד"], "answer": 1, "explanation": "באיבר המטרה הפאראסימפתטי אצטילכולין נקשר לקולטנים מוסקריניים."}, {"q": "איזה נוירוטרנסמיטר משתחרר בדרך כלל מהסיב הפוסט-גנגליוני הסימפתטי?", "options": ["אצטילכולין תמיד", "נוראדרנלין (נוראדרנלין)", "גלוטמט", "גאבא"], "answer": 1, "explanation": "ברוב האיברים הסיב הפוסט-גנגליוני הסימפתטי משחרר נוראדרנלין."}, {"q": "מהו החריג הסימפתטי החשוב בבלוטות הזיעה?", "options": ["הן מקבלות אצטילכולין ונקשרות לקולטנים מוסקריניים", "הן אינן מקבלות עצבוב", "הן מקבלות רק אדרנלין מהדם", "הן מקבלות דופמין"], "answer": 0, "explanation": "למרות שהן סימפתטיות, בלוטות הזיעה מקבלות אצטילכולין הפועל על קולטנים מוסקריניים."}, {"q": "מה מיוחד בליבת יותרת הכליה (ליבת יותרת הכליה)?", "options": ["היא מתפקדת כגנגליון סימפתטי משונה ומשחררת קטכולאמינים לדם", "היא חלק מהמערכת הפאראסימפתטית", "היא מפרישה אצטילכולין לשריר השלד", "היא אינה מקבלת עצבוב"], "answer": 0, "explanation": "ליבת יותרת הכליה מקבלת אצטילכולין פרה-גנגליוני ומשחררת אדרנלין ונוראדרנלין למחזור הדם."}, {"q": "איזה אנזים מפרק אצטילכולין במרווח הסינפטי?", "options": ["ChAT", "אצטילכולין אסטראז", "מונואמין אוקסידאז בלבד", "קטכול־או־מתיל־טרנספראז בלבד"], "answer": 1, "explanation": "אצטילכולין אסטראז מפרק אצטילכולין ומפסיק את פעולתו בסינפסה."}, {"q": "מהו תפקיד האנזים ChAT?", "options": ["פירוק נוראדרנלין", "סינתזה של אצטילכולין מכולין ואצטיל-CoA", "חסימת קולטנים מוסקריניים", "שחרור סידן מהעצם"], "answer": 1, "explanation": "כולין אצטיל־טרנספראז מסנתז אצטילכולין מכולין ואצטיל-CoA."}, {"q": "כיצד פועל פילוקרפין (פילוקרפין)?", "options": ["אגוניסט מוסקריני", "אנטגוניסט מוסקריני", "חוסם בטא", "מעכב אצטילכולין אסטראז"], "answer": 0, "explanation": "פילוקרפין מפעיל קולטנים מוסקריניים ומחקה פעילות פאראסימפתטית."}, {"q": "איזו השפעה צפויה מפילוקרפין בעין?", "options": ["מידריאזיס (הרחבת האישון)", "מיוזיס (כיווץ האישון)", "חסימת יצירת דמעות", "שיתוק עצב הראייה"], "answer": 1, "explanation": "פילוקרפין גורם לכיווץ האישון ויכול לסייע בהפחתת לחץ תוך-עיני."}, {"q": "כיצד פועל ניקוטין במינונים נמוכים?", "options": ["כאגוניסט לקולטנים ניקוטיניים", "כאנטגוניסט מוסקריני", "כחוסם בטא", "כמעכב אצטילכולין-אסטראז"], "answer": 0, "explanation": "ניקוטין מפעיל קולטנים ניקוטיניים במערכת העצבים האוטונומית."}, {"q": "כיצד פועל אטרופין (אטרופין)?", "options": ["אגוניסט מוסקריני", "אנטגוניסט מוסקריני", "אגוניסט בטא-2", "מעכב אצטילכולין אסטראז"], "answer": 1, "explanation": "אטרופין חוסם קולטנים מוסקריניים ולכן מעכב פעילות פאראסימפתטית."}, {"q": "איזו השפעה אופיינית לאטרופין?", "options": ["האטת קצב הלב והגברת הפרשות", "הגברת קצב הלב והפחתת הפרשות", "כיווץ הסמפונות", "הגברת תנועתיות המעי"], "answer": 1, "explanation": "חסימת מוסקרינים יכולה לגרום לטכיקרדיה, יובש בפה והפחתת הפרשות."}, {"q": "כיצד פועל דונפזיל (דונפזיל)?", "options": ["חוסם קולטנים מוסקריניים", "מעכב אצטילכולין-אסטראז", "אגוניסט אלפא-1", "חוסם בטא"], "answer": 1, "explanation": "דונפזיל מעכב אצטילכולין אסטראז וכך מעלה את רמת האצטילכולין בסינפסה."}, {"q": "מהי אחת ההתוויות הקליניות המרכזיות של דונפזיל?", "options": ["טיפול במחלת אלצהיימר", "טיפול ביתר לחץ דם חריף בלבד", "טיפול באסתמה", "טיפול בגלאוקומה"], "answer": 0, "explanation": "דונפזיל משמש לשיפור סימפטומטי בתסמיני אלצהיימר."}, {"q": "מהו מנגנון הפעולה של חוסמי בטא (חוסמי בטא)?", "options": ["הפעלת קולטני בטא", "חסימת קולטני בטא אדרנרגיים", "הפעלת קולטנים מוסקריניים", "עיכוב פירוק אצטילכולין"], "answer": 1, "explanation": "חוסמי בטא מעכבים את השפעת קטכולאמינים על קולטני בטא."}, {"q": "איזו השפעה קרדיווסקולרית צפויה מחוסמי בטא?", "options": ["עלייה בקצב הלב", "ירידה בקצב הלב ובעוצמת ההתכווצות", "הרחבה קבועה של האישון", "הגברת הפרשת אדרנלין"], "answer": 1, "explanation": "חסימת β1 בלב מפחיתה קצב לב ועוצמת התכווצות."}, {"q": "כיצד פועל אפינפרין (אפינפרין)?", "options": ["כאנטגוניסט אדרנרגי", "כאגוניסט אדרנרגי על קולטני אלפא ובטא", "כמעכב אצטילכולין אסטראז", "כחוסם מוסקריני בלבד"], "answer": 1, "explanation": "אפינפרין מפעיל קולטנים אדרנרגיים מסוג α ו-β."}, {"q": "באיזה מצב חירום משמש אפינפרין באופן מרכזי?", "options": ["אנפילקסיס", "עצירות קלה", "נדודי שינה", "כאב ראש קל"], "answer": 0, "explanation": "אפינפרין הוא טיפול מרכזי באנפילקסיס בזכות השפעותיו על דרכי הנשימה וכלי הדם."}, {"q": "איזו אמירה מסכמת נכון את פעולת שתי זרועות מערכת העצבים האוטונומית?", "options": ["הן תמיד פועלות באותו כיוון", "הן מאזנות זו את זו לשמירה על תפקוד תקין", "רק המערכת הסימפתטית חיונית", "אין להן השפעה על איברים פנימיים"], "answer": 1, "explanation": "המערכת הסימפתטית והפאראסימפתטית פועלות לעיתים בכיוונים מנוגדים אך משלימים."}];
-let questions=[],index=0,score=0,answered=false;
-function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}}
-function startQuiz(){questions = JSON.parse(JSON.stringify(originalQuestions));
-shuffle(questions);
-questions = questions.slice(0, 20);questions.forEach(q=>{const c=q.options[q.answer];shuffle(q.options);q.answer=q.options.indexOf(c)});index=0;score=0;answered=false;renderQuestion()}
-function renderStart(){document.getElementById('progressBar').style.width='0%';document.getElementById('scoreText').textContent='מוכן להתחלה';document.getElementById('slide').innerHTML=`<section class="start"><div class="kicker">מצגת תרגול אינטראקטיבית</div><h1>מערכת העצבים האוטונומית</h1><p>כל שאלה מופיעה לבדה. לאחר בחירת תשובה מתקבלים מיד משוב והסבר, ואז עוברים לשאלה הבאה.</p><button class="ctrl primary" onclick="startQuiz()">התחלת התרגול</button><div class="small-note">${originalQuestions.length} שאלות • סדר אקראי • הסבר אחרי כל תשובה</div></section>`}
-function renderQuestion(){answered=false;const q=questions[index];document.getElementById('scoreText').textContent=`שאלה ${index+1} מתוך ${questions.length} | ציון: ${score}`;document.getElementById('progressBar').style.width=`${index/questions.length*100}%`;const L=['A','B','C','D'];document.getElementById('slide').innerHTML=`<div class="kicker">שאלה ${index+1} מתוך ${questions.length}</div><h1>${q.q}</h1><div class="options">${q.options.map((o,i)=>`<button class="option" onclick="answer(${i})">${L[i]}. ${o}</button>`).join('')}</div><div class="feedback" id="feedback"></div><div class="actions"><button class="ctrl secondary" onclick="renderStart()">התחלה מחדש</button><button class="ctrl primary" id="nextBtn" onclick="nextQuestion()" disabled>לשאלה הבאה</button></div>`}
-function answer(choice){if(answered)return;answered=true;const q=questions[index],bs=[...document.querySelectorAll('.option')];bs.forEach((b,i)=>{b.disabled=true;if(i===q.answer)b.classList.add('correct')});const ok=choice===q.answer;if(ok)score++;else bs[choice].classList.add('wrong');const f=document.getElementById('feedback');f.style.display='block';f.classList.add(ok?'good':'bad');f.innerHTML=`<div class="feedback-title">${ok?'נכון מאוד!':'לא נכון'}</div><div>${q.explanation}</div>`;document.getElementById('nextBtn').disabled=false;document.getElementById('scoreText').textContent=`שאלה ${index+1} מתוך ${questions.length} | ציון: ${score}`;document.getElementById('progressBar').style.width=`${(index+1)/questions.length*100}%`}
-function nextQuestion(){if(!answered)return;index++;index>=questions.length?renderFinish():renderQuestion()}
-function renderFinish(){const p=Math.round(score/questions.length*100),msg=p>=90?'מצוין! שליטה חזקה מאוד בחומר.':p>=75?'טוב מאוד! נשארה רק חזרה קצרה.':p>=60?'עבודה טובה, כדאי לחזור על הנושאים שבהם טעית.':'כדאי לעבור שוב על המצגת ולנסות מחדש.';document.getElementById('scoreText').textContent='התרגול הסתיים';document.getElementById('progressBar').style.width='100%';document.getElementById('slide').innerHTML=`<section class="finish"><div class="kicker">סיום התרגול</div><h1>כל הכבוד!</h1><div class="big-score">${score}/${questions.length}</div><p>${msg}</p><button class="ctrl primary" onclick="startQuiz()">תרגול חדש</button></section>`}
-renderStart();
-</script></body></html>
+:root{
+  --bg:#06111f;
+  --card:#102238;
+  --text:#f7fbff;
+  --muted:#a9bad0;
+  --blue:#58c9ff;
+  --gold:#ffc15d;
+  --line:rgba(255,255,255,.13);
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  min-height:100vh;
+  font-family:Arial,sans-serif;
+  color:var(--text);
+  background:
+    radial-gradient(circle at 12% 10%,rgba(88,201,255,.15),transparent 30%),
+    radial-gradient(circle at 88% 88%,rgba(255,193,93,.12),transparent 30%),
+    var(--bg);
+}
+.page{
+  width:min(1050px,100%);
+  margin:auto;
+  padding:28px 18px 50px;
+}
+header{
+  text-align:center;
+  padding:42px 16px 34px;
+}
+.badge{
+  display:inline-block;
+  color:var(--gold);
+  font-weight:900;
+  margin-bottom:12px;
+}
+h1{
+  margin:0;
+  font-size:clamp(34px,6vw,62px);
+}
+.subtitle{
+  color:var(--muted);
+  font-size:18px;
+  margin-top:14px;
+}
+.grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:22px;
+}
+.topic{
+  min-height:350px;
+  border:1px solid var(--line);
+  border-radius:28px;
+  padding:30px;
+  background:linear-gradient(145deg,rgba(16,34,56,.98),rgba(10,24,41,.98));
+  box-shadow:0 24px 65px rgba(0,0,0,.32);
+  display:flex;
+  flex-direction:column;
+  transition:.22s;
+}
+.topic:hover{
+  transform:translateY(-5px);
+  border-color:rgba(88,201,255,.45);
+}
+.icon{
+  font-size:58px;
+  margin-bottom:22px;
+}
+.topic h2{
+  font-size:clamp(25px,3vw,35px);
+  line-height:1.35;
+  margin:0 0 14px;
+}
+.topic p{
+  color:var(--muted);
+  font-size:17px;
+  line-height:1.8;
+  margin:0 0 26px;
+}
+.meta{
+  margin-top:auto;
+  color:var(--gold);
+  font-weight:800;
+  font-size:14px;
+  margin-bottom:15px;
+}
+.start{
+  display:block;
+  text-align:center;
+  text-decoration:none;
+  background:var(--blue);
+  color:#06111e;
+  padding:14px 18px;
+  border-radius:13px;
+  font-size:17px;
+  font-weight:900;
+}
+.start:hover{filter:brightness(1.08)}
+footer{
+  text-align:center;
+  color:var(--muted);
+  margin-top:28px;
+  font-size:14px;
+}
+@media(max-width:760px){
+  .page{padding:12px 10px 35px}
+  header{padding:30px 10px 25px}
+  .grid{grid-template-columns:1fr}
+  .topic{min-height:300px;padding:24px;border-radius:21px}
+}
+</style>
+</head>
+<body>
+<main class="page">
+  <header>
+    <div class="badge">תרגול אינטראקטיבי</div>
+  </header>
+
+  <section class="grid">
+    <article class="topic">
+      <div class="icon">🧠</div>
+      <h2>מערכת העצבים האוטונומית</h2>
+      <p>המערכת הסימפתטית והפאראסימפתטית, קולטנים, מוליכים עצביים ותרופות מרכזיות.</p>
+      <div class="meta">שאלות בסדר אקראי • הסבר אחרי כל תשובה</div>
+      <a class="start" href="autonomic_nervous_system.html">התחלת התרגול</a>
+    </article>
+
+    <article class="topic">
+      <div class="icon">🫀</div>
+      <h2>לחץ דם, תרופות ואי־ספיקת לב</h2>
+      <p>תפוקת הלב, התנגדות כלי הדם, מערכת RAAS והקבוצות התרופתיות המרכזיות.</p>
+      <div class="meta">20 שאלות אקראיות בכל סבב • חזרה על טעויות</div>
+      <a class="start" href="cardiovascular.html">התחלת התרגול</a>
+    </article>
+
+    <article class="topic">
+      <div class="icon">🫀</div>
+      <h2>לחץ דם, תרופות ואי־ספיקת לב</h2>
+      <p>תפוקת הלב, התנגדות כלי הדם, מערכת RAAS והקבוצות התרופתיות המרכזיות.</p>
+      <div class="meta">שאילות מורה</div>
+      <a class="start" href="Blood_Pressure_Quiz_Hebrew.html">התחלת התרגול</a>
+    </article>
+  </section>
+
+</main>
+</body>
+</html>
