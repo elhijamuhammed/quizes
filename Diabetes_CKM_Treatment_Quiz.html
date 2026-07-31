@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>חידון סוכרת, CKM וטיפול תרופתי</title>
+<style>
+:root{--bg:#07111f;--card:#101f34;--text:#f7fbff;--muted:#a8bad0;--blue:#55c7ff;--gold:#ffbd59;--green:#2ecc71;--red:#ff6672;--border:rgba(255,255,255,.12)}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;font-family:Arial,sans-serif;color:var(--text);background:radial-gradient(circle at 10% 10%,rgba(85,199,255,.14),transparent 28%),radial-gradient(circle at 90% 90%,rgba(255,189,89,.10),transparent 28%),var(--bg)}
+.app{max-width:950px;margin:auto;padding:78px 20px 24px}
+.topbar{display:flex;justify-content:space-between;align-items:center;gap:14px;margin-bottom:16px}
+.brand{font-weight:900;font-size:18px}
+.score{color:var(--muted);font-weight:700}
+.progress{height:10px;background:#081522;border-radius:999px;overflow:hidden;margin-bottom:18px}
+.progress>div{height:100%;width:0;background:linear-gradient(90deg,var(--blue),var(--gold));transition:.35s}
+.slide{min-height:620px;background:linear-gradient(145deg,rgba(16,31,52,.98),rgba(11,24,41,.98));border:1px solid var(--border);border-radius:28px;padding:clamp(22px,5vw,46px);display:flex;flex-direction:column;justify-content:center;box-shadow:0 24px 70px rgba(0,0,0,.35)}
+.kicker{color:var(--gold);font-weight:900;margin-bottom:12px}
+h1{font-size:clamp(25px,4vw,40px);line-height:1.45;margin:0 0 25px}
+.start,.finish{text-align:center}
+.start p,.finish p{color:var(--muted);font-size:18px;line-height:1.8}
+.options{display:grid;gap:13px}
+.option{border:1px solid var(--border);background:#0b192b;color:var(--text);padding:16px 18px;border-radius:15px;text-align:right;font-size:17px;line-height:1.55;cursor:pointer;transition:.2s}
+.option:hover:not(:disabled){transform:translateY(-2px);border-color:var(--blue);background:#10223b}
+.option.correct{border-color:var(--green);background:rgba(46,204,113,.17)}
+.option.wrong{border-color:var(--red);background:rgba(255,102,114,.17)}
+.option:disabled{cursor:default}
+.feedback{display:none;margin-top:22px;border-radius:18px;padding:18px 20px;line-height:1.7;background:rgba(255,255,255,.06);border:1px solid var(--border)}
+.feedback.good{border-color:rgba(46,204,113,.55)} .feedback.bad{border-color:rgba(255,102,114,.55)}
+.feedback-title{font-weight:900;font-size:19px;margin-bottom:6px}
+.actions{display:flex;justify-content:space-between;gap:12px;margin-top:22px;flex-wrap:wrap}
+button.ctrl{border:0;border-radius:13px;padding:13px 19px;font-size:16px;font-weight:900;cursor:pointer}
+.primary{background:var(--blue);color:#06111e} .secondary{background:#162a45;color:var(--text);border:1px solid var(--border)!important}
+button.ctrl:disabled{opacity:.45;cursor:not-allowed}
+.big-score{font-size:76px;font-weight:950;color:var(--gold);margin:12px 0}
+.small-note{color:var(--muted);font-size:14px;margin-top:18px}
+.menu-home{position:fixed;top:18px;left:18px;z-index:9999;display:inline-flex;align-items:center;gap:8px;padding:12px 17px;border-radius:13px;background:#162a45;color:var(--text);border:1px solid var(--border);text-decoration:none;font-weight:900;font-size:15px;box-shadow:0 12px 30px rgba(0,0,0,.3)}
+.menu-home:hover{background:#21416b;transform:translateY(-2px)}
+@media(max-width:600px){.app{padding:68px 10px 10px}.slide{min-height:calc(100vh - 115px);border-radius:20px;padding:20px}.option{font-size:16px;padding:14px}.topbar{font-size:14px}.menu-home{top:10px;left:10px;padding:10px 13px;font-size:14px}}
+</style>
+</head>
+<body>
+<a class="menu-home" href="index.html">← חזרה לתפריט</a>
+<div class="app">
+<div class="topbar"><div class="brand">סוכרת, CKM וטיפול תרופתי</div><div class="score" id="scoreText">מוכן להתחלה</div></div>
+<div class="progress"><div id="progressBar"></div></div>
+<main class="slide" id="slide"></main>
+</div>
+<script>
+const originalQuestions=[{"q":"מדוע גלוקוז נחשב למקור אנרגיה מרכזי בגוף?","options":["הוא מקור האנרגיה העיקרי לרוב התאים, ובמיוחד למוח","הוא משמש רק לבניית שריר","הוא נאגר רק בכליות","הוא אינו עובר לדם"],"answer":0,"explanation":"גלוקוז הוא מקור אנרגיה מרכזי לרוב תאי הגוף, והמוח תלוי בו במידה רבה בתנאים רגילים."},{"q":"איזה אחוז בקירוב מכלל הגלוקוז של הגוף צורך המוח במנוחה?","options":["כ־10%","כ־30%","כ־60%","כ־90%"],"answer":2,"explanation":"לפי המצגת, המוח צורך בקירוב 60% מכלל הגלוקוז של הגוף במנוחה."},{"q":"מהו תפקיד המערכת האנדוקרינית של הלבלב?","options":["ייצור אנזימי עיכול בלבד","בקרת רמות הסוכר בדם באמצעות הורמונים","סינון הדם","ייצור תאי דם"],"answer":1,"explanation":"המערכת האנדוקרינית בלבלב כוללת את איי לנגרהנס ומווסתת את רמות הסוכר באמצעות אינסולין וגלוקגון."},{"q":"איזה הורמון מופרש מתאי בטא בלבלב?","options":["גלוקגון","אינסולין","קורטיזול","אדרנלין"],"answer":1,"explanation":"אינסולין מופרש מתאי בטא ומסייע לכניסת גלוקוז לתאים ולהורדת רמתו בדם."},{"q":"איזה הורמון מופרש מתאי אלפא בלבלב?","options":["אינסולין","גלוקגון","GLP-1","לפטין"],"answer":1,"explanation":"גלוקגון מופרש מתאי אלפא ומעלה את רמת הסוכר בדם בעת הצורך."},{"q":"מהי סוכרת?","options":["מחלה זיהומית של הלבלב","מחלה מטבולית כרונית המאופיינת בהיפרגליקמיה","מחלה זמנית של לחץ הדם","מחלה של מערכת הנשימה"],"answer":1,"explanation":"סוכרת היא מחלה מטבולית כרונית שבה רמות הסוכר בדם גבוהות עקב פגיעה בייצור אינסולין, בפעילותו או בשניהם."},{"q":"מהו המנגנון העיקרי בסוכרת מסוג 1?","options":["עמידות לאינסולין בלבד","הרס אוטואימוני של תאי בטא וחסר מוחלט באינסולין","עודף גלוקגון בלבד","ייצור יתר של אינסולין"],"answer":1,"explanation":"בסוכרת מסוג 1 מערכת החיסון הורסת את תאי הבטא, ולכן נוצר חסר מוחלט באינסולין."},{"q":"מהו המנגנון העיקרי בסוכרת מסוג 2?","options":["חסר מוחלט מולד באינסולין","עמידות לאינסולין ובהמשך ירידה יחסית בהפרשתו","הרס נגיפי של הכבד בלבד","עלייה קבועה ב-GLP-1"],"answer":1,"explanation":"בסוכרת מסוג 2 יש תחילה עמידות לאינסולין ובהמשך גם ירידה ביכולת תאי הבטא להפריש אינסולין."},{"q":"איזה סוג סוכרת מהווה את רוב מקרי הסוכרת?","options":["סוג 1","סוג 2","סוכרת היריון בלבד","סוכרת משנית"],"answer":1,"explanation":"סוכרת מסוג 2 מהווה בערך 90% ממקרי הסוכרת."},{"q":"מהו הטיפול הבסיסי החיוני בסוכרת מסוג 1?","options":["שינוי תזונתי בלבד","אינסולין הכרחי לקיום","Metformin בלבד","GLP-1 בלבד"],"answer":1,"explanation":"בסוכרת מסוג 1 קיים חסר מוחלט באינסולין, ולכן טיפול באינסולין חיוני לקיום."},{"q":"מה מאפיין את התקופה השקטה בסוכרת מסוג 1?","options":["אין תהליך מחלתי כלל","תהליך אוטואימוני מתקדם ללא תסמינים קליניים בולטים","ריפוי מלא זמני","הופעת DKA בכל יום"],"answer":1,"explanation":"התהליך האוטואימוני יכול להתקדם במשך חודשים או שנים לפני הופעת התסמינים הקליניים."},{"q":"אילו נוגדנים יכולים לשמש סמנים ביולוגיים לסוכרת מסוג 1?","options":["GAD, IAA, ICA","CRP, ESR, WBC","Troponin, CK-MB","TSH, T3, T4"],"answer":0,"explanation":"GAD, IAA ו-ICA הם נוגדנים אופייניים שיכולים להעיד על תהליך אוטואימוני נגד תאי בטא."},{"q":"איזה מהבאים הוא תסמין שכיח של היפרגליקמיה?","options":["פוליפגיה, ירידה במשקל ועייפות","ברדיקרדיה בלבד","עצירות בלבד","כאב אוזניים"],"answer":0,"explanation":"תסמינים שכיחים כוללים רעב מוגבר, ירידה בלתי מוסברת במשקל, עייפות ולעיתים טשטוש ראייה."},{"q":"מדוע עלולה להתפתח חמצת קטוטית סוכרתית (DKA) בחסר אינסולין?","options":["כי הגוף מפרק שומנים ונוצרים גופי קטון חומציים","כי הגוף מפסיק לייצר שתן","כי יש עודף מוחלט של אינסולין","כי רמת הסידן יורדת"],"answer":0,"explanation":"בהיעדר אינסולין התאים אינם מנצלים גלוקוז היטב, הגוף מפרק שומן ונוצרים גופי קטון חומציים."},{"q":"מהי DKA?","options":["מצב כרוני שאינו מסוכן","מצב חירום חריף עם חמצת וקטונים בדם","מחלה של לחץ דם נמוך בלבד","תופעת לוואי של Metformin בלבד"],"answer":1,"explanation":"DKA היא חמצת קטוטית סוכרתית, מצב חריף ומסכן חיים הדורש טיפול דחוף."},{"q":"מהו הגורם המרכזי במעגל הרשע המטבולי של סוכרת מסוג 2?","options":["שומן ויסצרלי פעיל מטבולית","חוסר מוחלט בגלוקגון","עודף ברזל","חסר ויטמין C"],"answer":0,"explanation":"שומן בטני ויסצרלי מפריש חומרים פרו-דלקתיים ומקדם דלקת כרונית, עמידות לאינסולין ונזק אנדותליאלי."},{"q":"מהן שלוש אבני היסוד במעגל הרשע של סוכרת מסוג 2?","options":["דלקת כרונית, עמידות לאינסולין ונזק אנדותליאלי","חסר ברזל, אנמיה וברדיקרדיה","יתר סידן, חום וזיהום","אסתמה, אלרגיה ושיעול"],"answer":0,"explanation":"המצגת מדגישה דלקת כרונית, עמידות לאינסולין ונזק לאנדותל כמנגנונים המזינים זה את זה."},{"q":"מהי מיקרואנגיופתיה בסוכרת?","options":["פגיעה בכלי דם קטנים","פגיעה בכלי דם גדולים בלבד","פגיעה בשרירי הנשימה","פגיעה בעצמות"],"answer":0,"explanation":"מיקרואנגיופתיה היא פגיעה בכלי דם קטנים וקשורה לרטינופתיה, נפרופתיה ונוירופתיה."},{"q":"איזה סיבוך שייך למיקרואנגיופתיה?","options":["רטינופתיה סוכרתית","אוטם שריר הלב בלבד","שבץ בלבד","יתר לחץ דם בלבד"],"answer":0,"explanation":"רטינופתיה, נפרופתיה ונוירופתיה הן סיבוכים מיקרווסקולריים."},{"q":"איזה סיבוך שייך למקרואנגיופתיה?","options":["נוירופתיה בלבד","מחלת לב כלילית ושבץ","רטינופתיה בלבד","נפרופתיה בלבד"],"answer":1,"explanation":"מקרואנגיופתיה היא פגיעה בכלי דם גדולים ועלולה לגרום למחלת לב כלילית, אי-ספיקת לב ושבץ."},{"q":"מדוע יתר לחץ דם מכונה 'הרוצח השקט' בחולי סוכרת?","options":["כי הוא תמיד גורם לכאב","כי הוא עלול לפגוע בהדרגה בכלי הדם ללא תסמינים בולטים","כי הוא מוריד סוכר מיד","כי הוא מופיע רק בלילה"],"answer":1,"explanation":"יתר לחץ דם עלול לגרום נזק הדרגתי לדופן כלי הדם ולהעלות סיכון לבבי ומוחי גם ללא תסמינים."},{"q":"מהי תסמונת CKM?","options":["שילוב בין הציר הקרדיאלי, הכלייתי והמטבולי","מחלה של מערכת העצבים בלבד","מחלה זיהומית חריפה","סיבוך של העור בלבד"],"answer":0,"explanation":"CKM היא תסמונת Cardio-Kidney-Metabolic שבה הלב, הכליות והמטבוליזם משפיעים זה על זה."},{"q":"מהי תובנת המפתח בתסמונת CKM?","options":["כל איבר נפגע בנפרד","פגיעה בציר אחד עלולה לדרדר את שאר הצירים","הכליות אינן קשורות ללב","סוכרת אינה קשורה לכלי הדם"],"answer":1,"explanation":"הפגיעה אינה מבודדת; משבר בציר המטבולי, הכלייתי או הקרדיאלי עלול להחמיר את האחרים."},{"q":"איזה גורם אורח חיים מעלה סיכון ל-CKM?","options":["פעילות גופנית קבועה","תזונה עשירה בפחמימות פשוטות ושומנים רוויים","שינה מספקת","הפסקת עישון"],"answer":1,"explanation":"תזונה לא בריאה, חוסר פעילות, עישון וצריכת אלכוהול מופרזת מעלים סיכון."},{"q":"מה כולל ניטור בסיסי בתסמונת קרדיו-רנו-מטבולית?","options":["סוכר, תפקודי כליה וכבד, פרופיל שומנים ולחץ דם","בדיקת שמיעה בלבד","צילום חזה בלבד","בדיקת עור בלבד"],"answer":0,"explanation":"המעקב כולל בדיקות דם בסיסיות, סמני דלקת, בדיקות שתן ובדיקות הדמיה לפי הצורך."},{"q":"מה מודד HbA1c?","options":["רמת סוכר ברגע הבדיקה בלבד","ממוצע משוער של רמות הסוכר בחודשים האחרונים","רמת האינסולין לאחר ארוחה בלבד","תפקוד הכליה"],"answer":1,"explanation":"HbA1c משקף את החשיפה הממוצעת לגלוקוז לאורך כ-2–3 חודשים."},{"q":"איזו רמת HbA1c מתאימה לאבחנת סוכרת?","options":["פחות מ-5.7%","5.7%–6.4%","6.5% ומעלה","4% ומעלה"],"answer":2,"explanation":"HbA1c של 6.5% ומעלה הוא אחד הקריטריונים לאבחנת סוכרת."},{"q":"איזו רמת גלוקוז בצום מתאימה לאבחנת סוכרת?","options":["70–99 mg/dl","100–125 mg/dl","126 mg/dl ומעלה","50 mg/dl"],"answer":2,"explanation":"גלוקוז בצום של 126 mg/dl ומעלה מתאים לאבחנת סוכרת."},{"q":"איזו רמת גלוקוז שעתיים לאחר העמסת 75 גרם מתאימה לאבחנת סוכרת?","options":["פחות מ-140 mg/dl","140–199 mg/dl","200 mg/dl ומעלה","100 mg/dl"],"answer":2,"explanation":"ערך של 200 mg/dl ומעלה שעתיים לאחר העמסת גלוקוז מתאים לאבחנת סוכרת."},{"q":"מהי המטרה המרכזית בטיפול בסוכרת מסוג 2?","options":["רק להוריד משקל","לאזן סוכר ולמנוע סיבוכים קרדיו-כלייתיים ומטבוליים","להפסיק כל פעילות גופנית","להעלות גלוקגון"],"answer":1,"explanation":"הטיפול מיועד לאיזון גליקמי וגם להפחתת סיכון לבבי, כלייתי ומטבולי."},{"q":"מהו טיפול קו ראשון נפוץ בסוכרת מסוג 2?","options":["Metformin","אינסולין קצר טווח בלבד לכל מטופל","Aspirin בלבד","Warfarin"],"answer":0,"explanation":"Metformin נחשב לעיתים קרובות לקו ראשון, בהתאם למצב המטופל ולמחלות הרקע."},{"q":"מהו מנגנון הפעולה המרכזי של Metformin?","options":["הגברת ייצור גלוקוז בכבד","הפחתת ייצור גלוקוז בכבד ושיפור הרגישות לאינסולין","הפעלת SGLT2","פירוק GLP-1"],"answer":1,"explanation":"Metformin מפחית גלוקונאוגנזה בכבד ומשפר את הרגישות לאינסולין."},{"q":"איזה יתרון אופייני ל-Metformin?","options":["סיכון גבוה להיפוגליקמיה כשהוא ניתן לבד","לרוב אינו גורם להיפוגליקמיה ועלותו נמוכה","עלייה משמעותית במשקל","פגיעה ישירה בלב"],"answer":1,"explanation":"Metformin יעיל, זול ובדרך כלל אינו גורם להיפוגליקמיה כשהוא ניתן לבדו."},{"q":"כיצד פועלים מעכבי DPP-4?","options":["מפרקים GLP-1 מהר יותר","מעכבים פירוק אינקרטינים וכך מאריכים את פעולתם","מגבירים ספיגת גלוקוז בכליה","חוסמים אינסולין"],"answer":1,"explanation":"DPP-4 מפרק אינקרטינים; עיכובו מאריך את פעילות GLP-1 ומסייע להפרשת אינסולין תלויה בגלוקוז."},{"q":"מהו אחד היתרונות של מעכבי DPP-4?","options":["סיכון גבוה להיפוגליקמיה","ניטרליות במשקל וסיכון נמוך יחסית להיפוגליקמיה","ירידה חדה בלחץ הדם בכל מטופל","עלייה גדולה במשקל"],"answer":1,"explanation":"מעכבי DPP-4 נחשבים ניטרליים במשקל ובעלי סיכון נמוך להיפוגליקמיה."},{"q":"כיצד פועלים אגוניסטים ל-GLP-1?","options":["מגבירים אינסולין תלוי גלוקוז, מפחיתים גלוקגון ומאטים התרוקנות קיבה","מגבירים פירוק GLP-1","מונעים הפרשת אינסולין","מעלים ספיגת גלוקוז במעי"],"answer":0,"explanation":"אגוניסטים ל-GLP-1 מגבירים הפרשת אינסולין לפי רמת הגלוקוז, מפחיתים גלוקגון, מאטים קיבה ומגבירים שובע."},{"q":"איזו תועלת אופיינית לאגוניסטים ל-GLP-1?","options":["עלייה במשקל","ירידה במשקל ושיפור איזון גליקמי","סיכון ודאי ל-DKA","אצירת נוזלים קשה בכל מטופל"],"answer":1,"explanation":"תרופות אלו יעילות בהורדת HbA1c ולעיתים גורמות לירידה משמעותית במשקל."},{"q":"מהו Tirzepatide (Mounjaro)?","options":["אגוניסט כפול ל-GIP ול-GLP-1","מעכב DPP-4 בלבד","אינסולין בזאלי","מעכב אלפא-גלוקוזידאז"],"answer":0,"explanation":"Tirzepatide הוא אגוניסט כפול לקולטני GIP ו-GLP-1."},{"q":"כיצד פועלים מעכבי SGLT2?","options":["מגבירים ספיגת גלוקוז בכליה","מפחיתים ספיגה חוזרת של גלוקוז בכליה ומגבירים הפרשתו בשתן","מעכבים GLP-1","מגבירים גלוקגון"],"answer":1,"explanation":"מעכבי SGLT2 גורמים לגלוקוזוריה באמצעות הפחתת הספיגה החוזרת של גלוקוז בכליה."},{"q":"איזו תועלת חשובה יש למעכבי SGLT2 מעבר להורדת סוכר?","options":["הגנה לבבית וכלייתית בחלק מהמטופלים","הגברת תיאבון","עלייה בנפח הדם","פגיעה קבועה בכליות"],"answer":0,"explanation":"לקבוצה זו יתרונות מוכחים בהפחתת סיכון לאי-ספיקת לב ובהגנה כלייתית בחולים מתאימים."},{"q":"איזו תופעת לוואי אופיינית למעכבי SGLT2?","options":["זיהומים גניטליים והתייבשות","שיעול יבש בלבד","ברדיקרדיה","אגרנולוציטוזיס"],"answer":0,"explanation":"הפרשת גלוקוז בשתן מעלה סיכון לזיהומים גניטליים, ועלולה לגרום גם להתייבשות ולירידת לחץ דם."},{"q":"כיצד פועל Acarbose?","options":["מעכב פירוק פחמימות במעי וממתן עליית סוכר לאחר ארוחה","מגביר ייצור גלוקוז בכבד","מפעיל קולטני GLP-1","מחליף אינסולין"],"answer":0,"explanation":"Acarbose מעכב אנזימי אלפא-גלוקוזידאז וכך מאט פירוק וספיגת פחמימות."},{"q":"איזו תופעת לוואי שכיחה של Acarbose?","options":["גזים ותסמיני מערכת העיכול","אגרנולוציטוזיס","שיעול יבש","הארכת QT"],"answer":0,"explanation":"עקב הגעת פחמימות לא מעוכלות למעי הגס שכיחים גזים, נפיחות ושלשול."},{"q":"מהו החיסרון המרכזי של Pioglitazone?","options":["סיכון לאצירת נוזלים ועלייה במשקל","גרימת DKA בכל מטופל","פגיעה ישירה בתאי בטא","היפוגליקמיה חמורה תמיד"],"answer":0,"explanation":"Pioglitazone עשוי לגרום לעלייה במשקל, בצקות ואצירת נוזלים ולכן אינו מתאים לכל מטופל."},{"q":"מה מאפיין אינסולין בזאלי ארוך טווח?","options":["כיסוי בסיסי ממושך לאורך היממה","פעולה של דקות בלבד","ניתן רק בזמן ארוחה","אינו משמש בסוכרת"],"answer":0,"explanation":"אינסולין בזאלי מספק רמת רקע יציבה יחסית לאורך שעות רבות."},{"q":"מהו תפקיד אינסולין קצר טווח או מהיר?","options":["כיסוי עליית הסוכר סביב ארוחות","כיסוי רק בלילה","הפחתת לחץ דם","טיפול בזיהום"],"answer":0,"explanation":"אינסולין קצר או מהיר ניתן סביב הארוחה כדי לשלוט בעלייה הפוסט-פרנדיאלית בגלוקוז."},{"q":"מהי אסטרטגיית Basal-Plus?","options":["אינסולין בזאלי בלבד לכל החיים","אינסולין בזאלי בתוספת זריקת בולוס לפני הארוחה העיקרית","שלוש זריקות GLP-1 ביום","הפסקת כל אינסולין"],"answer":1,"explanation":"Basal-Plus משלב אינסולין בזאלי עם מנת בולוס אחת לפני הארוחה העיקרית."},{"q":"מהי תופעת הלוואי המרכזית של טיפול באינסולין?","options":["היפוגליקמיה","שיעול יבש","אגרנולוציטוזיס","כיב קיבה"],"answer":0,"explanation":"היפוגליקמיה היא הסיכון המרכזי בטיפול באינסולין, ולצידה עלולה להופיע עלייה במשקל."},{"q":"מדוע חשוב לבצע רוטציה של אזורי הזרקת אינסולין?","options":["כדי למנוע ליפוהיפרטרופיה ולשמור על ספיגה צפויה","כדי להעלות סוכר","כדי למנוע שיעול","כדי להאריך מחט"],"answer":0,"explanation":"החלפת אזורי הזרקה מפחיתה שינויים ברקמת השומן ומשפרת עקביות בספיגת האינסולין."},{"q":"באיזו זווית מוזרק אינסולין בדרך כלל?","options":["15°","30°","45° בלבד","90° לתוך השומן התת-עורי"],"answer":3,"explanation":"ברוב המקרים ההזרקה נעשית בזווית של 90 מעלות לתוך השומן התת-עורי, בהתאם לאורך המחט ומבנה הגוף."},{"q":"מתי מומלץ למדוד סוכר אצל מטופל עם אינסולין?","options":["רק פעם בחודש","לפי הצורך: לפני ארוחות, לפני שינה, לפני פעילות ובמצבי מחלה או חשד להיפוגליקמיה","רק אחרי פעילות","אין צורך למדוד"],"answer":1,"explanation":"הניטור מותאם לטיפול ולמצב המטופל ויכול לכלול מדידות לפני ארוחות, לפני שינה, סביב פעילות ובמצבים מיוחדים."}];
+const QUESTIONS_PER_ROUND=20;
+let questions=[],index=0,score=0,answered=false;
+
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}}
+
+function startQuiz(){
+  questions=JSON.parse(JSON.stringify(originalQuestions));
+  shuffle(questions);
+  questions=questions.slice(0,Math.min(QUESTIONS_PER_ROUND,questions.length));
+  questions.forEach(q=>{const correct=q.options[q.answer];shuffle(q.options);q.answer=q.options.indexOf(correct)});
+  index=0;score=0;answered=false;renderQuestion();
+}
+
+function renderStart(){
+  progressBar.style.width='0%';
+  scoreText.textContent='מוכן להתחלה';
+  slide.innerHTML=`<section class="start"><div class="kicker">תרגול אינטראקטיבי</div><h1>סוכרת, CKM וטיפול תרופתי</h1><p>20 שאלות אקראיות בכל סבב, עם משוב והסבר לאחר כל תשובה.</p><button class="ctrl primary" onclick="startQuiz()">התחלת התרגול</button><div class="small-note">${originalQuestions.length} שאלות במאגר • 20 בכל סבב • מבוסס על מצגת הסוכרת, CKM והטיפול התרופתי</div></section>`;
+}
+
+function renderQuestion(){
+  answered=false;
+  const q=questions[index],L=['א','ב','ג','ד'];
+  scoreText.textContent=`שאלה ${index+1} מתוך ${questions.length} | ציון: ${score}`;
+  progressBar.style.width=`${index/questions.length*100}%`;
+  slide.innerHTML=`<div class="kicker">שאלה ${index+1} מתוך ${questions.length}</div><h1>${q.q}</h1><div class="options">${q.options.map((o,i)=>`<button class="option" onclick="answer(${i})">${L[i]}. ${o}</button>`).join('')}</div><div class="feedback" id="feedback"></div><div class="actions"><button class="ctrl secondary" onclick="renderStart()">התחלה מחדש</button><button class="ctrl primary" id="nextBtn" onclick="nextQuestion()" disabled>לשאלה הבאה</button></div>`;
+}
+
+function answer(choice){
+  if(answered)return;
+  answered=true;
+  const q=questions[index],buttons=[...document.querySelectorAll('.option')];
+  buttons.forEach((b,i)=>{b.disabled=true;if(i===q.answer)b.classList.add('correct')});
+  const ok=choice===q.answer;
+  if(ok)score++; else buttons[choice].classList.add('wrong');
+  const f=document.getElementById('feedback');
+  f.style.display='block';f.classList.add(ok?'good':'bad');
+  f.innerHTML=`<div class="feedback-title">${ok?'נכון מאוד!':'לא נכון'}</div><div>${q.explanation}</div>`;
+  nextBtn.disabled=false;
+  scoreText.textContent=`שאלה ${index+1} מתוך ${questions.length} | ציון: ${score}`;
+  progressBar.style.width=`${(index+1)/questions.length*100}%`;
+}
+
+function nextQuestion(){if(!answered)return;index++;index>=questions.length?renderFinish():renderQuestion()}
+
+function renderFinish(){
+  const p=Math.round(score/questions.length*100);
+  const msg=p>=90?'מצוין! שליטה חזקה מאוד בחומר.':p>=75?'טוב מאוד! נשארה רק חזרה קצרה.':p>=60?'עבודה טובה, כדאי לחזור על הנושאים שבהם טעית.':'כדאי לעבור שוב על המצגת ולנסות מחדש.';
+  scoreText.textContent='התרגול הסתיים';progressBar.style.width='100%';
+  slide.innerHTML=`<section class="finish"><div class="kicker">סיום התרגול</div><h1>כל הכבוד!</h1><div class="big-score">${score}/${questions.length}</div><p>${msg}</p><button class="ctrl primary" onclick="startQuiz()">תרגול חדש</button></section>`;
+}
+renderStart();
+</script>
+</body>
+</html>
