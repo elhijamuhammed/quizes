@@ -494,6 +494,39 @@
       `;
     }
 
+document.addEventListener("keydown", function(e) {
+  if (e.repeat) return;
+
+  // Backspace = الرجوع للصفحة الرئيسية
+  if (e.key === "Backspace") {
+    e.preventDefault();
+    window.location.href = "index.html";
+    return;
+  }
+
+  // إذا انتهى الامتحان → Enter يبدأ امتحان جديد
+  if (index >= questions.length) {
+    if (e.key === "Enter") {
+      startQuiz();
+    }
+    return;
+  }
+
+  // أثناء السؤال → 1-4 لاختيار الإجابة
+  if (!answered) {
+    if (e.key === "1") answer(0);
+    else if (e.key === "2") answer(1);
+    else if (e.key === "3") answer(2);
+    else if (e.key === "4") answer(3);
+  }
+
+  // بعد الإجابة → Enter للسؤال التالي
+  else if (e.key === "Enter") {
+    nextQuestion();
+  }
+});
+
+
     renderStart();
   </script>
 </body>

@@ -107,6 +107,59 @@ function finish(){
   const review=mistakes.length?`<div class="mistakes"><h2>חזרה על טעויות</h2>${mistakes.map(m=>`<div class="mistake"><strong>${m.q}</strong><br>התשובה הנכונה: ${m.correct}<br>${m.explanation}</div>`).join('')}</div>`:'<p>לא היו טעויות בסבב הזה.</p>';
   card.innerHTML=`<section class="finish"><div class="kicker">סיום התרגול</div><h1>כל הכבוד!</h1><div class="big-score">${score}/${questions.length}</div><p>${msg}</p><button class="ctrl primary" onclick="prepare()">סבב חדש</button>${review}</section>`;
 }
+
+// ===== Keyboard shortcuts =====
+// 1-4: choose answer
+// Enter: next question
+// Enter on finish screen: new quiz
+// Backspace: return to index.html
+document.addEventListener("keydown", function (e) {
+  if (e.repeat) return;
+
+  // Backspace -> main menu
+  if (e.key === "Backspace") {
+    e.preventDefault();
+    window.location.href = "index.html";
+    return;
+  }
+
+  // Finish screen -> Enter starts a new quiz
+  if (document.querySelector(".finish")) {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      prepare();
+    }
+    return;
+  }
+
+  // While a question is shown -> 1,2,3,4 select answers
+  const optionButtons = document.querySelectorAll(".option");
+  if (!answered && optionButtons.length > 0) {
+    const keyMap = {
+      "1": 0,
+      "2": 1,
+      "3": 2,
+      "4": 3
+    };
+
+    if (Object.prototype.hasOwnProperty.call(keyMap, e.key)) {
+      e.preventDefault();
+      const choice = keyMap[e.key];
+
+      if (optionButtons[choice] && !optionButtons[choice].disabled) {
+        answer(choice);
+      }
+      return;
+    }
+  }
+
+  // After answering -> Enter goes to next question
+  if (answered && e.key === "Enter") {
+    e.preventDefault();
+    nextQuestion();
+  }
+});
+
 startScreen();
 </script><a class="menu-home" href="index.html">↩ חזרה לתפריט</a>
 </body></html>
