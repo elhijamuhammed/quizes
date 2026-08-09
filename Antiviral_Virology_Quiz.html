@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>חידון תרופות אנטי-ויראליות ווירולוגיה קלינית</title>
+<style>
+:root{--bg:#07111f;--card:#101f34;--text:#f7fbff;--muted:#a8bad0;--blue:#55c7ff;--gold:#ffbd59;--green:#2ecc71;--red:#ff6672;--border:rgba(255,255,255,.12)}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;font-family:Arial,sans-serif;color:var(--text);background:radial-gradient(circle at 10% 10%,rgba(85,199,255,.14),transparent 28%),radial-gradient(circle at 90% 90%,rgba(255,189,89,.10),transparent 28%),var(--bg)}
+.app{max-width:950px;margin:auto;padding:78px 20px 24px}
+.topbar{display:flex;justify-content:space-between;align-items:center;gap:14px;margin-bottom:16px}
+.brand{font-weight:900;font-size:18px}
+.score{color:var(--muted);font-weight:700}
+.progress{height:10px;background:#081522;border-radius:999px;overflow:hidden;margin-bottom:18px}
+.progress>div{height:100%;width:0;background:linear-gradient(90deg,var(--blue),var(--gold));transition:.35s}
+.slide{min-height:620px;background:linear-gradient(145deg,rgba(16,31,52,.98),rgba(11,24,41,.98));border:1px solid var(--border);border-radius:28px;padding:clamp(22px,5vw,46px);display:flex;flex-direction:column;justify-content:center;box-shadow:0 24px 70px rgba(0,0,0,.35)}
+.kicker{color:var(--gold);font-weight:900;margin-bottom:12px}
+h1{font-size:clamp(25px,4vw,40px);line-height:1.45;margin:0 0 25px}
+.start,.finish{text-align:center}
+.start p,.finish p{color:var(--muted);font-size:18px;line-height:1.8}
+.options{display:grid;gap:13px}
+.option{border:1px solid var(--border);background:#0b192b;color:var(--text);padding:16px 18px;border-radius:15px;text-align:right;font-size:17px;line-height:1.55;cursor:pointer;transition:.2s}
+.option:hover:not(:disabled){transform:translateY(-2px);border-color:var(--blue);background:#10223b}
+.option.correct{border-color:var(--green);background:rgba(46,204,113,.17)}
+.option.wrong{border-color:var(--red);background:rgba(255,102,114,.17)}
+.option:disabled{cursor:default}
+.feedback{display:none;margin-top:22px;border-radius:18px;padding:18px 20px;line-height:1.7;background:rgba(255,255,255,.06);border:1px solid var(--border)}
+.feedback.good{border-color:rgba(46,204,113,.55)} .feedback.bad{border-color:rgba(255,102,114,.55)}
+.feedback-title{font-weight:900;font-size:19px;margin-bottom:6px}
+.actions{display:flex;justify-content:space-between;gap:12px;margin-top:22px;flex-wrap:wrap}
+button.ctrl{border:0;border-radius:13px;padding:13px 19px;font-size:16px;font-weight:900;cursor:pointer}
+.primary{background:var(--blue);color:#06111e} .secondary{background:#162a45;color:var(--text);border:1px solid var(--border)!important}
+button.ctrl:disabled{opacity:.45;cursor:not-allowed}
+.big-score{font-size:76px;font-weight:950;color:var(--gold);margin:12px 0}
+.small-note{color:var(--muted);font-size:14px;margin-top:18px}
+.menu-home{position:fixed;top:18px;left:18px;z-index:9999;display:inline-flex;align-items:center;gap:8px;padding:12px 17px;border-radius:13px;background:#162a45;color:var(--text);border:1px solid var(--border);text-decoration:none;font-weight:900;font-size:15px;box-shadow:0 12px 30px rgba(0,0,0,.3)}
+.menu-home:hover{background:#21416b;transform:translateY(-2px)}
+@media(max-width:600px){.app{padding:68px 10px 10px}.slide{min-height:calc(100vh - 115px);border-radius:20px;padding:20px}.option{font-size:16px;padding:14px}.topbar{font-size:14px}.menu-home{top:10px;left:10px;padding:10px 13px;font-size:14px}}
+</style>
+</head>
+<body>
+<a class="menu-home" href="index.html">← חזרה לתפריט</a>
+<div class="app">
+<div class="topbar"><div class="brand">תרופות אנטי-ויראליות ווירולוגיה קלינית</div><div class="score" id="scoreText">מוכן להתחלה</div></div>
+<div class="progress"><div id="progressBar"></div></div>
+<main class="slide" id="slide"></main>
+</div>
+<script>
+const originalQuestions=[
+{"q":"כיצד מוגדר וירוס מבחינה ביולוגית לפי המצגת?","options":["מיקרואורגניזם זעיר שאינו נחשב ליצור חי עצמאי וחייב לחדור לתא מארח כדי להשתכפל","חיידק זעיר המסוגל להתרבות עצמאית","תא דם המסייע במלחמה בזיהומים","פטרייה מיקרוסקופית הגורמת למחלות עור"],"answer":0,"explanation":"וירוסים הם טפילים תוך-תאיים מוחלטים שאינם נחשבים ליצורים חיים עצמאיים, וחייבים לחדור לתוך תא מארח (אדם, צמח או חיידק) ולנצל את מנגנוני התא כדי להשתכפל ולהתרבות."},
+{"q":"מהו סדר הגדלים (מהקטן לגדול) של וירוס, חיידק ותא דם אדום לפי המצגת?","options":["וירוס < חיידק < תא דם אדום","תא דם אדום < חיידק < וירוס","חיידק < וירוס < תא דם אדום","שלושתם באותו גודל בקירוב"],"answer":0,"explanation":"נגיף שפעת/קורונה קטן ביותר (כ-60–140 ננומטר, קטנים במיוחד מגיעים ל-7–20 ננומטר בלבד), חיידק אי. קולי גדול ממנו (כ-2,000 ננומטר), ותא דם אדום גדול מכולם (כ-8,000 ננומטר)."},
+{"q":"אילו שלושה רכיבים מרכיבים את האנטומיה הבסיסית של הווירוס לפי המצגת?","options":["חומר גנטי, קפסיד ומעטפת שומנית עם וזיזים","גרעין, ציטופלזמה וממברנת תא","ריבוזומים, מיטוכונדריה וקרום","דופן תא, קפסולה ופלסמיד"],"answer":0,"explanation":"האנטומיה של הווירוס כוללת חומר גנטי (RNA או DNA), קפסיד חלבוני גיאומטרי המגן עליו, ולעיתים גם מעטפת שומנית עם וזיזים (Spikes)."},
+{"q":"מה מייחד את המעטפת השומנית עם הוזיזים (Envelope, Spikes) בווירוסים לפי המצגת?","options":["היא קיימת רק בחלק מהווירוסים, נגזרת מהתא המארח, ומשמשת כ'מפתח' להיקשרות ולחדירה לתאים","היא קיימת בכל הווירוסים ללא יוצא מן הכלל","היא מייצרת אנרגיה עבור הווירוס","היא מחליפה את הצורך בקפסיד"],"answer":0,"explanation":"מעטפת שומנית עם וזיזים קיימת רק בחלק מהווירוסים, ממברנה הליפידית נגזרת מהתא המארח, ועליה חלבוני היקשרות (כמו Spikes) המשמשים 'מפתח' להיקשרות וחדירה לתאים."},
+{"q":"איזה מהבאים הוא דוגמה לווירוס RNA לפי המצגת?","options":["SARS-CoV-2 (נגיף הקורונה)","וירוס ההרפס (Herpes)","אדנו-וירוס","VZV"],"answer":0,"explanation":"נגיף הקורונה (SARS-CoV-2), שפעת (Influenza) ואיידס (HIV) מסווגים כווירוסי RNA לפי המצגת."},
+{"q":"איזה מהבאים הוא דוגמה לווירוס DNA לפי המצגת?","options":["משפחת ההרפס (HSV) ו-VZV","נגיף הקורונה","וירוס השפעת","HIV"],"answer":0,"explanation":"משפחת ההרפס (Herpes Simplex, VZV) ואדנו-וירוס מסווגים כווירוסי DNA, בניגוד לקורונה, שפעת ואיידס שהם ווירוסי RNA."},
+{"q":"מהו השלב הראשון מתוך 5 שלבי מנגנון הפלישה וההדבקה של הווירוס בתא?","options":["קישור (Attachment) – התחברות מדויקת לקולטן ייחודי על התא","שכפול (Replication)","הרכבה ושחרור (Assembly & Release)","חדירה (Penetration)"],"answer":0,"explanation":"השלב הראשון הוא קישור (Attachment) – התחברות מדויקת לקולטן ייחודי על מעטפת התא (מנגנון 'מנעול ומפתח')."},
+{"q":"באילו שני מנגנונים עיקריים יכול הווירוס לחדור לתוך התא בשלב ה-Penetration לפי המצגת?","options":["איחוי (Fusion) או בולענות (Endocytosis)","חלוקת תא ומיטוזה","דיפוזיה פסיבית בלבד","הפרשת אנזימי עיכול"],"answer":0,"explanation":"החדירה לתוך התא (Penetration) מתבצעת לרוב כניסה לתוך התא באמצעות איחוי (Fusion) או בולענות (Endocytosis)."},
+{"q":"מה מתרחש בשלב השלת המעטפת (Uncoating)?","options":["פירוק הקפסיד ושחרור הגנום הנגיפי לתוך התא","הרכבת נגיפים חדשים ופריצת התא","קישור ראשוני לקולטן ייחודי","שכפול הגנום הנגיפי וייצור חלבונים"],"answer":0,"explanation":"בשלב ה-Uncoating מתפרק הקפסיד והגנום הנגיפי משתחרר לתוך התא, כהכנה להמשך תהליך השכפול."},
+{"q":"אילו זיהומים מהווים מעל 80% מהתחלואה הנגיפית באדם לפי המצגת?","options":["זיהומים חריפים בדרכי הנשימה (שפעת, RSV, קורונה, אדנווירוס, ריינווירוס)","מחלות מערכת העיכול והעצבים","מחלות ילדים ופריחה","מחלות כרוניות וקשות (HIV, הפטיטיס)"],"answer":0,"explanation":"זיהומים חריפים בדרכי הנשימה, הכוללים שפעת, RSV, קורונה, אדנווירוס וריינווירוס, מהווים מעל 80% מהתחלואה."},
+{"q":"איזה מהבאים נחשב 'דגל אדום' המחייב פנייה מיידית לרופא לפי המצגת?","options":["חום גבוה ומתמשך שאינו יורד, קוצר נשימה משמעותי או כאבים בחזה","עייפות קלה בלבד","שיעול קל וכיח שקוף","כאבי שרירים מתונים"],"answer":0,"explanation":"בין דגלי האזהרה המחייבים פנייה מיידית לרופא: חום גבוה ומתמשך שאינו יורד, קוצר נשימה משמעותי, כאבים בחזה, וכאבי ראש חריגים המחמירים."},
+{"q":"מדוע טיפול באנטיביוטיקה אינו התשובה הנכונה לזיהום ויראלי, לפי הפרדוקס המוצג במצגת?","options":["היא עלולה לגרום נזק ישיר למטופל ונזק אקולוגי עולמי, ואינה יעילה כלל נגד וירוסים","היא תמיד יעילה נגד וירוסים אך יקרה מאוד","היא פועלת רק על נגיפי DNA","אין לה תופעות לוואי כלל"],"answer":0,"explanation":"אנטיביוטיקה עלולה לגרום נזק ישיר למטופל (חשיפה מיותרת לתופעות לוואי) וגם נזק אקולוגי עולמי (זירוז התפתחות עמידות חיידקית), ובנוסף אינה יעילה כלל נגד מחלה ויראלית."},
+{"q":"מהו 'הכלל הזהב' המוזכר במצגת לגבי טיפול במחלה ויראלית?","options":["טיפול במחלה ויראלית באמצעות אנטיביוטיקה אינו יעיל כלל ועלול לגרום נזק משמעותי","יש לתת אנטיביוטיקה כתמיכה תמיד","יש להימנע מכל טיפול תרופתי במקרה של וירוס","יש לתת אנטיביוטיקה רק לילדים"],"answer":0,"explanation":"הכלל הזהב הוא שטיפול במחלה ויראלית באמצעות אנטיביוטיקה אינו יעיל, ואף עלול לגרום נזק משמעותי למטופל."},
+{"q":"מהו הבסיס למניעת מחלות ויראליות לפי קו ההגנה הראשון במצגת?","options":["שמירה על כללי היגיינה קפדנית וקיום מין בטוח ומוגן, לצד חיסונים","נטילת אנטיביוטיקה מונעת באופן קבוע","שתייה מרובה בלבד ללא צעדים נוספים","הימנעות מוחלטת מכל מגע חברתי"],"answer":0,"explanation":"הבסיס למניעה הוא שמירה על כללי היגיינה קפדנית וקיום מין בטוח ומוגן, לצד חיסונים כנגד מחלות רבות כמו שפעת, אדמת, חצבת ואבעבועות רוח."},
+{"q":"איזו מחלה ויראלית חשובה עדיין אין נגדה חיסון יעיל, כפי שמצוין כחריג בולט במצגת?","options":["HIV","חצבת","שפעת","אבעבועות רוח"],"answer":0,"explanation":"המצגת מציינת כחריג בולט שעדיין לא קיים חיסון יעיל נגד נגיף ה-HIV, בניגוד למחלות רבות אחרות שנמנעות בחיסון."},
+{"q":"כיצד פועלת טכנולוגיית חיסון ה-mRNA (כמו פייזר, מודרנה) לפי המצגת?","options":["מכילה מולקולות RNA שליח המקודדות לחלבון ויראלי, והתא האנושי מייצר את החלבון ומעורר תגובה חיסונית","מזריקה את הנגיף החי המוחלש ישירות לגוף","מבוססת על מתן נוגדנים מוכנים מראש","מכילה רק את הקפסיד של הווירוס ללא חומר גנטי"],"answer":0,"explanation":"חיסוני mRNA מכילים מולקולות RNA שליח המקודדות לחלבון ויראלי מסוים (כמו חלבון ה-Spike); התא האנושי מייצר את החלבון, מה שמעורר תגובה חיסונית, והחיסון אינו מכיל נגיף כלל ודורש אחסון בהקפאה."},
+{"q":"מהו אחוז הנשאות המוערך של HSV-1 (הרפס שפתיים) באוכלוסייה העולמית בשנת 2020 לפי המצגת?","options":["כ-64%","כ-16%","כ-90%","כ-5%"],"answer":0,"explanation":"לפי המצגת, בשנת 2020 הוערך כי כ-64% מאוכלוסיית העולם נגועה ב-HSV-1, בעיקר בעקבות מגע ישיר עם נגעים או רוק בהרגלי מין שינויים."},
+{"q":"איזו תרופה פומית מועדפת קלינית ברוב המקרים בטיפול ב-HSV לפי המצגת, ומדוע?","options":["Valacyclovir, בזכות זמינות ביולוגית גבוהה יותר וספיגה טובה יותר לדם","Penciclovir, כי הוא זול יותר","Paxlovid, כי הוא ניתן פומית","Calamine, כי הוא ללא תופעות לוואי"],"answer":0,"explanation":"Valacyclovir (ואלטרקס) מועדף קלינית לרוב בזכות זמינות ביולוגית גבוהה יותר בהשוואה לאציקלוביר, כלומר ספיגה טובה יותר לדם."},
+{"q":"איזו אזהרת קופסה שחורה (Black Box Warning) מוזכרת לגבי VZV (אבעבועות רוח) בילדים?","options":["איסור מוחלט על מתן אספירין בשל סכנת התפתחות תסמונת ריי","חובה למתן אנטיביוטיקה מיידית","איסור על מתן פרצטמול","חובה לאשפוז מיידי בכל מקרה"],"answer":0,"explanation":"קיים איסור מוחלט על מתן אספירין לילדים במחלה ויראלית כמו VZV, עקב סכנה להתפתחות תסמונת ריי – פגיעה כבדית ומוחית קטלנית."},
+{"q":"באיזה קולטן אנושי משתמש חלבון ה-Spike של SARS-CoV-2 כדי לחדור לתאים, לפי המצגת?","options":["ACE2","P2Y12","Factor Xa","TSH"],"answer":0,"explanation":"הנגיף משתמש בחלבון המעטפת (Spike) כדי להיקשר בספציפיות לקולטן ACE2 הנמצא על תאי האדם, בעיקר במערכת הנשימה, ודרכו הוא חודר לתא."}
+];
+const QUESTIONS_PER_ROUND=20;
+let questions=[],index=0,score=0,answered=false;
+
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}}
+
+function startQuiz(){
+  questions=JSON.parse(JSON.stringify(originalQuestions));
+  shuffle(questions);
+  questions=questions.slice(0,Math.min(QUESTIONS_PER_ROUND,questions.length));
+  questions.forEach(q=>{const correct=q.options[q.answer];shuffle(q.options);q.answer=q.options.indexOf(correct)});
+  index=0;score=0;answered=false;renderQuestion();
+}
+
+function renderStart(){
+  progressBar.style.width='0%';
+  scoreText.textContent='מוכן להתחלה';
+  slide.innerHTML=`<section class="start"><div class="kicker">תרגול אינטראקטיבי</div><h1>תרופות אנטי-ויראליות ווירולוגיה קלינית</h1><p>20 שאלות אקראיות בכל סבב, עם משוב והסבר לאחר כל תשובה.</p><button class="ctrl primary" onclick="startQuiz()">התחלת התרגול</button><div class="small-note">${originalQuestions.length} שאלות במאגר • מבוסס על מצגת מבנה המיקרו-אורגניזם, אפידמיולוגיה ואסטרטגיות טיפול תרופתי</div></section>`;
+}
+
+function renderQuestion(){
+  answered=false;
+  const q=questions[index],L=['א','ב','ג','ד'];
+  scoreText.textContent=`שאלה ${index+1} מתוך ${questions.length} | ציון: ${score}`;
+  progressBar.style.width=`${index/questions.length*100}%`;
+  slide.innerHTML=`<div class="kicker">שאלה ${index+1} מתוך ${questions.length}</div><h1>${q.q}</h1><div class="options">${q.options.map((o,i)=>`<button class="option" onclick="answer(${i})">${L[i]}. ${o}</button>`).join('')}</div><div class="feedback" id="feedback"></div><div class="actions"><button class="ctrl secondary" onclick="renderStart()">התחלה מחדש</button><button class="ctrl primary" id="nextBtn" onclick="nextQuestion()" disabled>לשאלה הבאה</button></div>`;
+}
+
+function answer(choice){
+  if(answered)return;
+  answered=true;
+  const q=questions[index],buttons=[...document.querySelectorAll('.option')];
+  buttons.forEach((b,i)=>{b.disabled=true;if(i===q.answer)b.classList.add('correct')});
+  const ok=choice===q.answer;
+  if(ok)score++; else buttons[choice].classList.add('wrong');
+  const f=document.getElementById('feedback');
+  f.style.display='block';f.classList.add(ok?'good':'bad');
+  f.innerHTML=`<div class="feedback-title">${ok?'נכון מאוד!':'לא נכון'}</div><div>${q.explanation}</div>`;
+  nextBtn.disabled=false;
+  scoreText.textContent=`שאלה ${index+1} מתוך ${questions.length} | ציון: ${score}`;
+  progressBar.style.width=`${(index+1)/questions.length*100}%`;
+}
+
+function nextQuestion(){if(!answered)return;index++;index>=questions.length?renderFinish():renderQuestion()}
+
+function renderFinish(){
+  const p=Math.round(score/questions.length*100);
+  const msg=p>=90?'מצוין! שליטה חזקה מאוד בחומר.':p>=75?'טוב מאוד! נשארה רק חזרה קצרה.':p>=60?'עבודה טובה, כדאי לחזור על הנושאים שבהם טעית.':'כדאי לעבור שוב על המצגת ולנסות מחדש.';
+  scoreText.textContent='התרגול הסתיים';progressBar.style.width='100%';
+  slide.innerHTML=`<section class="finish"><div class="kicker">סיום התרגול</div><h1>כל הכבוד!</h1><div class="big-score">${score}/${questions.length}</div><p>${msg}</p><button class="ctrl primary" onclick="startQuiz()">תרגול חדש</button></section>`;
+}
+
+document.addEventListener("keydown", function(e) {
+  if (e.repeat) return;
+
+  if (e.key === "Backspace") {
+    e.preventDefault();
+    window.location.href = "index.html";
+    return;
+  }
+
+  if (index >= questions.length) {
+    if (e.key === "Enter") {
+      startQuiz();
+    }
+    return;
+  }
+
+  if (!answered) {
+    if (e.key === "1") answer(0);
+    else if (e.key === "2") answer(1);
+    else if (e.key === "3") answer(2);
+    else if (e.key === "4") answer(3);
+  }
+  else if (e.key === "Enter") {
+    nextQuestion();
+  }
+});
+
+renderStart();
+</script>
+</body>
+</html>

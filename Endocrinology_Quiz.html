@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>חידון אנדוקרינולוגיה והפרעות הורמונליות</title>
+<style>
+:root{--bg:#07111f;--card:#101f34;--text:#f7fbff;--muted:#a8bad0;--blue:#55c7ff;--gold:#ffbd59;--green:#2ecc71;--red:#ff6672;--border:rgba(255,255,255,.12)}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;font-family:Arial,sans-serif;color:var(--text);background:radial-gradient(circle at 10% 10%,rgba(85,199,255,.14),transparent 28%),radial-gradient(circle at 90% 90%,rgba(255,189,89,.10),transparent 28%),var(--bg)}
+.app{max-width:950px;margin:auto;padding:78px 20px 24px}
+.topbar{display:flex;justify-content:space-between;align-items:center;gap:14px;margin-bottom:16px}
+.brand{font-weight:900;font-size:18px}
+.score{color:var(--muted);font-weight:700}
+.progress{height:10px;background:#081522;border-radius:999px;overflow:hidden;margin-bottom:18px}
+.progress>div{height:100%;width:0;background:linear-gradient(90deg,var(--blue),var(--gold));transition:.35s}
+.slide{min-height:620px;background:linear-gradient(145deg,rgba(16,31,52,.98),rgba(11,24,41,.98));border:1px solid var(--border);border-radius:28px;padding:clamp(22px,5vw,46px);display:flex;flex-direction:column;justify-content:center;box-shadow:0 24px 70px rgba(0,0,0,.35)}
+.kicker{color:var(--gold);font-weight:900;margin-bottom:12px}
+h1{font-size:clamp(25px,4vw,40px);line-height:1.45;margin:0 0 25px}
+.start,.finish{text-align:center}
+.start p,.finish p{color:var(--muted);font-size:18px;line-height:1.8}
+.options{display:grid;gap:13px}
+.option{border:1px solid var(--border);background:#0b192b;color:var(--text);padding:16px 18px;border-radius:15px;text-align:right;font-size:17px;line-height:1.55;cursor:pointer;transition:.2s}
+.option:hover:not(:disabled){transform:translateY(-2px);border-color:var(--blue);background:#10223b}
+.option.correct{border-color:var(--green);background:rgba(46,204,113,.17)}
+.option.wrong{border-color:var(--red);background:rgba(255,102,114,.17)}
+.option:disabled{cursor:default}
+.feedback{display:none;margin-top:22px;border-radius:18px;padding:18px 20px;line-height:1.7;background:rgba(255,255,255,.06);border:1px solid var(--border)}
+.feedback.good{border-color:rgba(46,204,113,.55)} .feedback.bad{border-color:rgba(255,102,114,.55)}
+.feedback-title{font-weight:900;font-size:19px;margin-bottom:6px}
+.actions{display:flex;justify-content:space-between;gap:12px;margin-top:22px;flex-wrap:wrap}
+button.ctrl{border:0;border-radius:13px;padding:13px 19px;font-size:16px;font-weight:900;cursor:pointer}
+.primary{background:var(--blue);color:#06111e} .secondary{background:#162a45;color:var(--text);border:1px solid var(--border)!important}
+button.ctrl:disabled{opacity:.45;cursor:not-allowed}
+.big-score{font-size:76px;font-weight:950;color:var(--gold);margin:12px 0}
+.small-note{color:var(--muted);font-size:14px;margin-top:18px}
+.menu-home{position:fixed;top:18px;left:18px;z-index:9999;display:inline-flex;align-items:center;gap:8px;padding:12px 17px;border-radius:13px;background:#162a45;color:var(--text);border:1px solid var(--border);text-decoration:none;font-weight:900;font-size:15px;box-shadow:0 12px 30px rgba(0,0,0,.3)}
+.menu-home:hover{background:#21416b;transform:translateY(-2px)}
+@media(max-width:600px){.app{padding:68px 10px 10px}.slide{min-height:calc(100vh - 115px);border-radius:20px;padding:20px}.option{font-size:16px;padding:14px}.topbar{font-size:14px}.menu-home{top:10px;left:10px;padding:10px 13px;font-size:14px}}
+</style>
+</head>
+<body>
+<a class="menu-home" href="index.html">← חזרה לתפריט</a>
+<div class="app">
+<div class="topbar"><div class="brand">אנדוקרינולוגיה והפרעות הורמונליות</div><div class="score" id="scoreText">מוכן להתחלה</div></div>
+<div class="progress"><div id="progressBar"></div></div>
+<main class="slide" id="slide"></main>
+</div>
+<script>
+const originalQuestions=[
+{"q":"מהו המאפיין העיקרי המבדיל בין פעילות המערכת האנדוקרינית למערכת העצבים?","options":["המערכת האנדוקרינית מספקת תגובות מיידיות דרך אימפולס חשמלי","המערכת האנדוקרינית מאפשרת בקרה לטווח ארוך באמצעות הפרשה לזרם הדם","הורמונים מועברים דרך סיבי עצב ולא דרך כלי הדם","מערכת העצבים פועלת ללא שיתוף פעולה עם המערכת האנדוקרינית"],"answer":1,"explanation":"בניגוד למערכת העצבים, המספקת תגובות מיידיות באמצעות אימפולסים חשמליים, המערכת האנדוקרינית פועלת לאט יותר אך מאפשרת בקרה ממושכת באמצעות הפרשת הורמונים לזרם הדם."},
+{"q":"מה מגדיר בלוטה כבלוטה אקסוקרינית?","options":["יכולת לפעול כטרמוסטט הורמונלי בלבד","הפרשת חומרים אל מחוץ לגוף או אל תוך חללים פנימיים בגוף","ייצור הורמונים השולטים על בלוטות אחרות במוח","הפרשת הורמונים ישירות לזרם הדם להשפעה על איברים מרוחקים"],"answer":1,"explanation":"בלוטות אקסוקריניות מפרישות את תוצריהן דרך צינוריות אל מחוץ לגוף או אל חללים פנימיים, בניגוד לבלוטות אנדוקריניות המפרישות הורמונים ישירות לדם."},
+{"q":"כיצד פועלת לולאת משוב שלילי במערכת ההורמונלית?","options":["המערכת מופסקת רק כאשר רמת ההורמונים יורדת מתחת לסף מינימלי","ההורמון מעודד את ייצורו העצמי עד להשגת מטרה דרמטית","כל בלוטה בשרשרת ההיררכית מפעילה את הקודמת לה ללא הפסקה","ריכוז גבוה של הורמון גורם להפסקת הייצור של עצמו על ידי עיכוב הבלוטה המגרה"],"answer":3,"explanation":"במשוב שלילי, עלייה ברמת ההורמון מעכבת את הבלוטה המגרה שיצרה אותו, וכך המערכת שומרת על איזון ומונעת ייצור יתר."},
+{"q":"איזה מהתהליכים הבאים הוא דוגמה למשוב חיובי?","options":["שמירה על טמפרטורת גוף קבועה","ויסות רמת הסוכר בדם על ידי אינסולין","הפרשת אוקסיטוצין במהלך הלידה","הפרשת הורמוני בלוטת התריס המעכבים את ה-TSH"],"answer":2,"explanation":"הפרשת אוקסיטוצין בלידה היא דוגמה קלאסית למשוב חיובי: הצירים מגבירים את הפרשת ההורמון, וזה בתורו מגביר עוד יותר את הצירים עד להשלמת הלידה."},
+{"q":"מהו תפקידו העיקרי של ההיפותלמוס במערכת האנדוקרינית?","options":["ייצור אנזימי עיכול והפרשתם למעי","ייצור ישיר של אינסולין וגלוקגון","ספיגת סידן מהמעיים אל זרם הדם","שמירה על איזון הגוף (הומאוסטזיס) ושליטה על בלוטת ההיפופיזה"],"answer":3,"explanation":"ההיפותלמוס משמש כמרכז בקרה המקשר בין מערכת העצבים למערכת ההורמונלית, שומר על הומאוסטזיס ושולט בפעילות ההיפופיזה."},
+{"q":"בציר בלוטת התריס (HPT axis), מהו תפקידו של ה-TSH?","options":["להעלות את רמת הסידן בדם על ידי פירוק עצם","לגרום לבלוטת התריס להפריש את ההורמונים T3 ו-T4","לווסת את רמת הסוכר בדם בזמן צום","לעכב את הפרשת ה-TRH מההיפותלמוס"],"answer":1,"explanation":"TSH, המופרש מההיפופיזה, מגרה את בלוטת התריס לייצר ולהפריש את הורמוני התריס T3 ו-T4."},
+{"q":"כיצד משפיעים הורמוני בלוטת התריס (T3,T4) על רמתם של TRH ו-TSH?","options":["הם גורמים להיפופיזה להפריש LH ו-FSH במקום TSH","הם אינם משפיעים כלל על ההיפופיזה או ההיפותלמוס","הם מעודדים הפרשה נוספת של TRH ו-TSH כדי להגביר את המטבוליזם","הם מדכאים את ההיפופיזה וההיפותלמוס כדי להפחית את הפרשת ה-TSH וה-TRH"],"answer":3,"explanation":"זהו מנגנון משוב שלילי קלאסי: כאשר רמות T3 ו-T4 עולות, הן מעכבות את ההיפותלמוס וההיפופיזה, ובכך מפחיתות את הפרשת TRH ו-TSH."},
+{"q":"איזו בלוטה אחראית על העלאת רמת הסידן בדם כאשר היא נמוכה מדי?","options":["הלבלב דרך הפרשת אינסולין","בלוטות יותרת התריס (פאראתירואיד) דרך הפרשת PTH","בלוטת יותרת המוח דרך הפרשת TSH","בלוטת התריס דרך הפרשת קלציטונין"],"answer":1,"explanation":"בלוטות הפאראתירואיד מפרישות PTH כאשר רמת הסידן בדם יורדת, וההורמון פועל להעלאתה חזרה לרמה תקינה."},
+{"q":"מהו התפקיד האנדוקריני של תאי בטא בלבלב?","options":["ייצור והפרשת אנזימי עיכול כמו ליפאז ועמילאז","הפרשת אינסולין להורדת רמת הסוכר בדם","הפרשת הורמוני מין כמו טסטוסטרון","הפרשת גלוקגון להעלאת רמת הסוכר בדם"],"answer":1,"explanation":"תאי בטא באיי לנגרהנס שבלבלב מפרישים אינסולין, המסייע לתאים לקלוט גלוקוז ומוריד את רמתו בדם."},
+{"q":"מה מייחד את בלוטת הלבלב מבחינת תפקודה במערכות הגוף?","options":["היא הבלוטה היחידה בגוף המפרישה הורמונים לזרם הדם","כל התאים בלבלב מייצרים את אותם חומרים","היא פועלת גם כבלוטה אנדוקרינית וגם כבלוטה אקסוקרינית","היא מייצרת הורמונים רק בתגובה לאימפולסים חשמליים ממוח"],"answer":2,"explanation":"הלבלב הוא בלוטה מעורבת: החלק האקסוקריני מפריש אנזימי עיכול למעי, והחלק האנדוקריני (איי לנגרהנס) מפריש הורמונים כמו אינסולין וגלוקגון ישירות לדם."},
+{"q":"מהו התהליך שמתרחש כאשר רמת ההורמון בדם יורדת מתחת לסף מסוים בלולאת משוב שלילי?","options":["הגוף מפסיק לייצר את ההורמון לצמיתות","המערכת עוברת באופן אוטומטי למשוב חיובי","המנגנון המפעיל מתחיל לפעול מחדש כדי להחזיר את המערכת לאיזון","הכליות מפרישות את שאריות ההורמון כדי למנוע הצטברות"],"answer":2,"explanation":"כאשר רמת ההורמון יורדת מתחת לסף, העיכוב מוסר והבלוטה המגרה מתחילה לפעול מחדש כדי להחזיר את המערכת לאיזון."},
+{"q":"אילו מההורמונים הבאים נחשבים להורמוני מין?","options":["T3 ו-T4","אסטרוגן, פרוגסטרון וטסטוסטרון","אינסולין וגלוקגון","PTH וקלציטונין"],"answer":1,"explanation":"אסטרוגן, פרוגסטרון וטסטוסטרון הם הורמוני המין המרכזיים, האחראים בין היתר על התפתחות ותפקוד מערכת הרבייה."},
+{"q":"מהי מטרת ה'ציר ההורמונלי' (Hormonal Axis)?","options":["למנוע מהורמונים להגיע לאיברים מרוחקים","לאפשר לכל בלוטה לפעול באופן עצמאי ללא תלות באחרות","להחליף את מערכת העצבים במצבי חירום","ליצור שרשרת פיקוד היררכית שבה כל בלוטה מפעילה את הבאה בתור"],"answer":3,"explanation":"ציר הורמונלי הוא שרשרת פיקוד היררכית (למשל היפותלמוס–היפופיזה–בלוטת יעד) שבה כל שלב מפעיל ומווסת את השלב הבא."},
+{"q":"כיצד משפיע הורמון הקלציטונין על רמת הסידן בדם?","options":["הוא מגביר את ספיגת הסידן מהמעיים לדם","הוא מעלה את רמת הסידן על ידי פירוק העצמות","הוא הופך סידן לוויטמין D בכבד","הוא מוריד את רמת הסידן בדם"],"answer":3,"explanation":"קלציטונין, המופרש מבלוטת התריס, פועל בניגוד ל-PTH ומוריד את רמת הסידן בדם."},
+{"q":"מי מהבאים נחשב לשליח כימי המעביר הוראות מדויקות לתאים ואיברים?","options":["תא שריר","נוירון","אנזימי עיכול","הורמון"],"answer":3,"explanation":"הורמון הוא שליח כימי המופרש לזרם הדם ומעביר מסרים מדויקים לתאי מטרה ואיברים מרוחקים בגוף."},
+{"q":"איזו מערכת אחראית על פענוח תגובה סנסורית וכיווץ שריר מהיר?","options":["מערכת העצבים","המערכת האנדוקרינית","מערכת העיכול האקסוקרינית","ציר ה-HPA"],"answer":0,"explanation":"מערכת העצבים אחראית על תגובות מהירות ומדויקות, כולל פענוח גירויים חושיים והפעלת כיווץ שרירים תוך שברירי שנייה."},
+{"q":"מה קורה כשרמות הורמוני בלוטת התריס (T3-T4) נמוכות מדי בדם?","options":["המשוב השלילי מוסר, וההיפופיזה מעלה את הפרשת ה-TSH","בלוטת הפאראתירואיד מפרישה PTH במקום בלוטת התריס","ההיפופיזה מפסיקה להפריש TSH כדי לחסוך באנרגיה","רמת המטבוליזם הבסיסי עולה באופן פתאומי"],"answer":0,"explanation":"כאשר רמות T3 ו-T4 נמוכות, העיכוב על ההיפופיזה מוסר, וכתוצאה מכך היא מגבירה את הפרשת ה-TSH כדי לגרות את בלוטת התריס."},
+{"q":"מהו תפקידו של הורמון הגלוקגון המופרש מתאי אלפא בלבלב?","options":["העלאת רמת הגלוקוז בדם, למשל בזמן צום","פירוק חלבונים בקיבה","הורדת רמת הגלוקוז בדם לאחר ארוחה","ויסות קצב הלב בזמן מאמץ"],"answer":0,"explanation":"גלוקגון פועל בניגוד לאינסולין ומעלה את רמת הגלוקוז בדם, בעיקר בזמן צום או ירידה ברמת הסוכר."},
+{"q":"איזו בלוטה מכונה לעיתים 'בלוטת העל' משום שהיא מווסתת את רוב הבלוטות האחרות?","options":["בלוטת ההיפופיזה (יותרת המוח)","הלבלב","בלוטת התריס","יותרת הכליה"],"answer":0,"explanation":"בלוטת ההיפופיזה מכונה 'בלוטת העל' מכיוון שהיא מפרישה הורמונים המווסתים את פעילותן של רוב הבלוטות האנדוקריניות האחרות בגוף."},
+{"q":"מהו הקשר בין PTH לוויטמין D לפי המצגת?","options":["ויטמין D מיוצר בבלוטת הפאראתירואיד יחד עם PTH","הם פועלים בצורה הפוכה - אחד מעלה סידן והשני מוריד","ה-PTH מסייע בהפעלת ויטמין D, שבתורו מגביר ספיגת סידן במעי","ויטמין D מעכב את פעולת ה-PTH בכליות"],"answer":2,"explanation":"PTH מפעיל את ויטמין D בכליות לצורתו הפעילה, וזה בתורו מגביר את ספיגת הסידן במעי - כך שני ההורמונים פועלים יחד להעלאת רמת הסידן בדם."}
+];
+const QUESTIONS_PER_ROUND=20;
+let questions=[],index=0,score=0,answered=false;
+
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}}
+
+function startQuiz(){
+  questions=JSON.parse(JSON.stringify(originalQuestions));
+  shuffle(questions);
+  questions=questions.slice(0,Math.min(QUESTIONS_PER_ROUND,questions.length));
+  questions.forEach(q=>{const correct=q.options[q.answer];shuffle(q.options);q.answer=q.options.indexOf(correct)});
+  index=0;score=0;answered=false;renderQuestion();
+}
+
+function renderStart(){
+  progressBar.style.width='0%';
+  scoreText.textContent='מוכן להתחלה';
+  slide.innerHTML=`<section class="start"><div class="kicker">תרגול אינטראקטיבי</div><h1>אנדוקרינולוגיה והפרעות הורמונליות</h1><p>20 שאלות אקראיות בכל סבב, עם משוב והסבר לאחר כל תשובה.</p><button class="ctrl primary" onclick="startQuiz()">התחלת התרגול</button><div class="small-note">${originalQuestions.length} שאלות במאגר • מבוסס על מצגת המערכת האנדוקרינית וציר בלוטת התריס</div></section>`;
+}
+
+function renderQuestion(){
+  answered=false;
+  const q=questions[index],L=['א','ב','ג','ד'];
+  scoreText.textContent=`שאלה ${index+1} מתוך ${questions.length} | ציון: ${score}`;
+  progressBar.style.width=`${index/questions.length*100}%`;
+  slide.innerHTML=`<div class="kicker">שאלה ${index+1} מתוך ${questions.length}</div><h1>${q.q}</h1><div class="options">${q.options.map((o,i)=>`<button class="option" onclick="answer(${i})">${L[i]}. ${o}</button>`).join('')}</div><div class="feedback" id="feedback"></div><div class="actions"><button class="ctrl secondary" onclick="renderStart()">התחלה מחדש</button><button class="ctrl primary" id="nextBtn" onclick="nextQuestion()" disabled>לשאלה הבאה</button></div>`;
+}
+
+function answer(choice){
+  if(answered)return;
+  answered=true;
+  const q=questions[index],buttons=[...document.querySelectorAll('.option')];
+  buttons.forEach((b,i)=>{b.disabled=true;if(i===q.answer)b.classList.add('correct')});
+  const ok=choice===q.answer;
+  if(ok)score++; else buttons[choice].classList.add('wrong');
+  const f=document.getElementById('feedback');
+  f.style.display='block';f.classList.add(ok?'good':'bad');
+  f.innerHTML=`<div class="feedback-title">${ok?'נכון מאוד!':'לא נכון'}</div><div>${q.explanation}</div>`;
+  nextBtn.disabled=false;
+  scoreText.textContent=`שאלה ${index+1} מתוך ${questions.length} | ציון: ${score}`;
+  progressBar.style.width=`${(index+1)/questions.length*100}%`;
+}
+
+function nextQuestion(){if(!answered)return;index++;index>=questions.length?renderFinish():renderQuestion()}
+
+function renderFinish(){
+  const p=Math.round(score/questions.length*100);
+  const msg=p>=90?'מצוין! שליטה חזקה מאוד בחומר.':p>=75?'טוב מאוד! נשארה רק חזרה קצרה.':p>=60?'עבודה טובה, כדאי לחזור על הנושאים שבהם טעית.':'כדאי לעבור שוב על המצגת ולנסות מחדש.';
+  scoreText.textContent='התרגול הסתיים';progressBar.style.width='100%';
+  slide.innerHTML=`<section class="finish"><div class="kicker">סיום התרגול</div><h1>כל הכבוד!</h1><div class="big-score">${score}/${questions.length}</div><p>${msg}</p><button class="ctrl primary" onclick="startQuiz()">תרגול חדש</button></section>`;
+}
+
+document.addEventListener("keydown", function(e) {
+  if (e.repeat) return;
+
+  if (e.key === "Backspace") {
+    e.preventDefault();
+    window.location.href = "index.html";
+    return;
+  }
+
+  if (index >= questions.length) {
+    if (e.key === "Enter") {
+      startQuiz();
+    }
+    return;
+  }
+
+  if (!answered) {
+    if (e.key === "1") answer(0);
+    else if (e.key === "2") answer(1);
+    else if (e.key === "3") answer(2);
+    else if (e.key === "4") answer(3);
+  }
+  else if (e.key === "Enter") {
+    nextQuestion();
+  }
+});
+
+renderStart();
+</script>
+</body>
+</html>
