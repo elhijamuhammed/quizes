@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>חידון זיהומים פטרייתיים והטיפול בהם</title>
+<style>
+:root{--bg:#07111f;--card:#101f34;--text:#f7fbff;--muted:#a8bad0;--blue:#55c7ff;--gold:#ffbd59;--green:#2ecc71;--red:#ff6672;--border:rgba(255,255,255,.12)}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;font-family:Arial,sans-serif;color:var(--text);background:radial-gradient(circle at 10% 10%,rgba(85,199,255,.14),transparent 28%),radial-gradient(circle at 90% 90%,rgba(255,189,89,.10),transparent 28%),var(--bg)}
+.app{max-width:950px;margin:auto;padding:78px 20px 24px}
+.topbar{display:flex;justify-content:space-between;align-items:center;gap:14px;margin-bottom:16px}
+.brand{font-weight:900;font-size:18px}
+.score{color:var(--muted);font-weight:700}
+.progress{height:10px;background:#081522;border-radius:999px;overflow:hidden;margin-bottom:18px}
+.progress>div{height:100%;width:0;background:linear-gradient(90deg,var(--blue),var(--gold));transition:.35s}
+.slide{min-height:620px;background:linear-gradient(145deg,rgba(16,31,52,.98),rgba(11,24,41,.98));border:1px solid var(--border);border-radius:28px;padding:clamp(22px,5vw,46px);display:flex;flex-direction:column;justify-content:center;box-shadow:0 24px 70px rgba(0,0,0,.35)}
+.kicker{color:var(--gold);font-weight:900;margin-bottom:12px}
+h1{font-size:clamp(25px,4vw,40px);line-height:1.45;margin:0 0 25px}
+.start,.finish{text-align:center}
+.start p,.finish p{color:var(--muted);font-size:18px;line-height:1.8}
+.options{display:grid;gap:13px}
+.option{border:1px solid var(--border);background:#0b192b;color:var(--text);padding:16px 18px;border-radius:15px;text-align:right;font-size:17px;line-height:1.55;cursor:pointer;transition:.2s}
+.option:hover:not(:disabled){transform:translateY(-2px);border-color:var(--blue);background:#10223b}
+.option.correct{border-color:var(--green);background:rgba(46,204,113,.17)}
+.option.wrong{border-color:var(--red);background:rgba(255,102,114,.17)}
+.option:disabled{cursor:default}
+.feedback{display:none;margin-top:22px;border-radius:18px;padding:18px 20px;line-height:1.7;background:rgba(255,255,255,.06);border:1px solid var(--border)}
+.feedback.good{border-color:rgba(46,204,113,.55)} .feedback.bad{border-color:rgba(255,102,114,.55)}
+.feedback-title{font-weight:900;font-size:19px;margin-bottom:6px}
+.actions{display:flex;justify-content:space-between;gap:12px;margin-top:22px;flex-wrap:wrap}
+button.ctrl{border:0;border-radius:13px;padding:13px 19px;font-size:16px;font-weight:900;cursor:pointer}
+.primary{background:var(--blue);color:#06111e} .secondary{background:#162a45;color:var(--text);border:1px solid var(--border)!important}
+button.ctrl:disabled{opacity:.45;cursor:not-allowed}
+.big-score{font-size:76px;font-weight:950;color:var(--gold);margin:12px 0}
+.small-note{color:var(--muted);font-size:14px;margin-top:18px}
+.menu-home{position:fixed;top:18px;left:18px;z-index:9999;display:inline-flex;align-items:center;gap:8px;padding:12px 17px;border-radius:13px;background:#162a45;color:var(--text);border:1px solid var(--border);text-decoration:none;font-weight:900;font-size:15px;box-shadow:0 12px 30px rgba(0,0,0,.3)}
+.menu-home:hover{background:#21416b;transform:translateY(-2px)}
+@media(max-width:600px){.app{padding:68px 10px 10px}.slide{min-height:calc(100vh - 115px);border-radius:20px;padding:20px}.option{font-size:16px;padding:14px}.topbar{font-size:14px}.menu-home{top:10px;left:10px;padding:10px 13px;font-size:14px}}
+</style>
+</head>
+<body>
+<a class="menu-home" href="index.html">← חזרה לתפריט</a>
+<div class="app">
+<div class="topbar"><div class="brand">זיהומים פטרייתיים והטיפול בהם</div><div class="score" id="scoreText">מוכן להתחלה</div></div>
+<div class="progress"><div id="progressBar"></div></div>
+<main class="slide" id="slide"></main>
+</div>
+<script>
+const originalQuestions=[
+{"q":"איך מוגדרת פטרייה מבחינה ביולוגית לפי המצגת?","options":["אורגניזם איקריוטי שמתקיים על רקמות חיות של יצור אחר, אינו מייצר לעצמו מזון ומפריש אנזימים המפרקים את רקמות הפונדקאי","חיידק המסוגל לייצר את המזון שלו באמצעות פוטוסינתזה","וירוס הזקוק לתא מארח כדי להתרבות","תא דם התורם למערכת החיסון"],"answer":0,"explanation":"פטרייה היא אורגניזם איקריוטי המתקיים על רקמות חיות של יצור אחר, אינה מייצרת לעצמה מזון, ומפרישה אנזימים המפרקים את רקמות הפונדקאי, ובכך גורמת לרוב למחלה."},
+{"q":"איזו פטרייה ייחודית אינה מגיבה לאנטי-פטרייתיים רגילים ומטופלת בקו-טרימוקסזול לפי המצגת?","options":["פנאומוציסטיס","קנדידה","אספרגילוס","דרמטופיטים"],"answer":0,"explanation":"פנאומוציסטיס היא פטרייה ייחודית שאינה מגיבה לאנטי-פטרייתיים רגילים, והטיפול בה הוא באמצעות קו-טרימוקסזול."},
+{"q":"מה מייחד פטריות דימורפיות (כמו היסטופלסמה ובלסטומיצס) לפי המצגת?","options":["הן מתפקדות כעובש בסביבה וכשמר בגוף","הן חד-תאיות בלבד לאורך כל מחזור חייהן","הן פוגעות רק בציפורניים","הן אינן גורמות למחלה כלל"],"answer":0,"explanation":"פטריות דימורפיות כמו היסטופלסמה ובלסטומיצס מתפקדות כעובש כאשר הן נמצאות בסביבה, וכשמר כאשר הן נמצאות בתוך הגוף."},
+{"q":"מהם הנתונים המוצגים לגבי זיהומים פטרייתיים פולשניים בעולם לפי המצגת?","options":["כ־6.5 מיליון מקרים וכ־2.5 מיליון מקרי מוות ישירים בשנה","כ־60 אלף מקרים בשנה בלבד ללא תמותה משמעותית","הם נפוצים יותר מזיהומים שטחיים","הם קיימים רק במדינות מתפתחות"],"answer":0,"explanation":"זיהומים פטרייתיים פולשניים נדירים בהרבה מזיהומים שטחיים, אך מסכני חיים, עם כ־6.5 מיליון מקרים וכ־2.5 מיליון מקרי מוות ישירים בשנה."},
+{"q":"איזו פטרייה גורמת לאחוז התמותה הגבוה ביותר מבין המוזכרות במצגת?","options":["אספרגילוזיס – 85%","קנדידיאזיס – 64%","קריפטוקוקוס – 76%","פנאומוציסטיס – 42%"],"answer":0,"explanation":"לפי המצגת, אספרגילוזיס גורמת לאחוז התמותה הגבוה ביותר מבין הפטריות המוזכרות – כ־85%."},
+{"q":"כיצד מוגדרת מחלת פטרת העור (Dermatophytosis) לפי המצגת?","options":["מחלה זיהומית שטחית של העור שמחולליה הם פטריות קרטינופיליות המסוגלות לחדור לעור, לשיער ולציפורניים","מחלה זיהומית פנימית התוקפת את הריאות בלבד","מחלה גנטית שאינה קשורה לזיהום","מחלה הנגרמת אך ורק מחיידקים"],"answer":0,"explanation":"פטרת העור היא מחלה זיהומית שטחית שמחולליה הם קבוצת פטריות קרטינופיליות (אוהבות חומר קרן) הנקראות דרמטופיטים, המסוגלים לחדור לרקמות המכילות קרטין - עור, שיער וציפורניים."},
+{"q":"באיזו שכבת עור מתרחשים לרוב זיהומים פטרייתיים, ומה תפקידה לפי המצגת?","options":["באפידרמיס – השכבה החיצונית ביותר המהווה מחסום פיזי, כימי וחיסוני","בדרמיס – השכבה המכילה כלי דם","בהיפודרמיס – שכבת השומן התת-עורי","בשריר שמתחת לעור"],"answer":0,"explanation":"זיהומים פטרייתיים הם בדרך כלל באפידרמיס, שהיא השכבה החיצונית ביותר של העור ומהווה מחסום פיזי, כימי וחיסוני, בנויה בעיקר מקרטינוציטים וללא כלי דם."},
+{"q":"כיצד עשוי להתרחש הדבקה בזיהום דרמטופי לפי המצגת?","options":["מגע ישיר עם אדם או חיה נגועה, או התפשטות מאתר זיהום דרמטופי אחר","רק דרך אוויר","רק דרך מזון מזוהם","רק דרך עקיצת חרקים"],"answer":0,"explanation":"לפי המצגת, ההדבקה יכולה להיגרם בעקבות מגע ישיר עם אדם או חיה נגועה, או התפשטות מאתר זיהום דרמטופי אחר בגוף."},
+{"q":"מהי הבדיקה המהירה שניתן לבצע במרפאה לאבחון פטרת העור בעזרת תגריד עור, לפי המצגת?","options":["מבחן פוטסיום הידרוקסיד (KOH)","תרבית דם","בדיקת MRI","ביופסיה כירורגית"],"answer":0,"explanation":"האבחנה מתבצעת בעיקר בעזרת בדיקה פיזיקלית, ומבחן פוטסיום הידרוקסיד (KOH) בעזרת תגריד עור, המאפשר בדיקה מהירה במרפאה, לצד תרבית שהיא איטית יותר."},
+{"q":"מהי 'פטרת סמויה' (Tinea incognito) לפי המצגת?","options":["שימוש בסטרואידים על גבי זיהום פטרייתי שקט העלול לגרום להחרפה שלו","זיהום פטרייתי שאינו ניתן לאבחון כלל","פטרייה הנעלמת מעצמה ללא טיפול","זיהום פטרייתי המופיע רק בציפורניים"],"answer":0,"explanation":"Tinea incognito היא תופעה בה שימוש בסטרואידים על גבי זיהום פטרייתי שקט עלול לגרום להחרפה שלו, מה שמקשה על האבחנה הנכונה."},
+{"q":"מהי Majocchi's granuloma לפי המצגת, ומהו הטיפול הנדרש בה?","options":["זיהום דרמטופי המתפשט גם לזקיקי השיערה ולדרמיס, ומצריך טיפול סיסטמי","זיהום שטחי בלבד המטופל תמיד באופן מקומי","תופעה הקשורה לזיהום ויראלי ולא פטרייתי","סוג של אלרגיה לתרופות אנטי-פטרייתיות"],"answer":0,"explanation":"Majocchi's granuloma הוא זיהום דרמטופי שמתפשט גם לזקיקי השיערה ולדרמיס, ולכן מצריך טיפול סיסטמי ולא רק מקומי."},
+{"q":"איזו מחלה פטרייתית מוגדרת כ'רגל ספורטאים' והיא הנפוצה ביותר מבין הזיהומים הפטרייתיים בעור לפי המצגת?","options":["Tinea Pedis","Tinea Corporis","Tinea Cruris","Tinea Capitis"],"answer":0,"explanation":"Tinea Pedis, המכונה 'רגל ספורטאים', היא המחלה הפטרייתית הנפוצה ביותר, ונרכשת בדרך כלל באמצעות מגע ישיר עם האורגניזם הגורם, למשל הליכה יחפה בחדרי הלבשה."},
+{"q":"מהו ההבדל העיקרי בין פטרת המפשעה לשפשפת (אינטרטריגו), לפי המצגת?","options":["בפטרת יש גבול חד בשולי הרובד עם נטייה להבראה במרכז, ואילו בשפשפת הגבולות אינם חדים והמרכז מעורב במידה רבה","פטרת מופיעה רק אצל נשים ושפשפת רק אצל גברים","שפשפת נגרמת מזיהום פטרייתי בעוד פטרת נגרמת מחיכוך מכני","אין כל הבדל קליני ביניהן"],"answer":0,"explanation":"בפטרת יש גבול חד בשולי הרובד ונטייה להבראה במרכז הרובד, בעוד שבשפשפת גבולות הרובד אינם חדים ומרכז הרובד מעורב במידה רבה; הגורם לפטרת הוא זיהום ואילו לשפשפת הוא חיכוך מכני בין הירכיים."},
+{"q":"מהי אחת הסיבות העיקריות לכישלון טיפולי בזיהום פטרייתי לפי המצגת?","options":["היענות לא טובה – הפסקה מוקדמת מדי של הטיפול","טיפול ממושך מדי מעבר לנדרש","שימוש יתר במים בזמן הטיפול","הימנעות משימוש בסטרואידים"],"answer":0,"explanation":"בין הסיבות העיקריות לכישלון טיפולי: היענות לא טובה עם הפסקה מוקדמת מדי של הטיפול, אבחנה לא נכונה, מטופלים מדוכאי חיסון, התפרצות חוזרת ועמידות הולכת וגוברת."},
+{"q":"מהו מנגנון הפעולה של תרופות האזולים (Azoles) לפי המצגת?","options":["עיכוב סינתזת Ergosterol שהוא מרכיב חיוני בממברנת התא, במנגנון פונגוסטטי","יצירת תעלות בממברנת הפטרייה במנגנון פונגיצידי","פגיעה בהובלת חומרים חיוניים לתא הפטרייתי","עיכוב יצירת ביופילם בלבד"],"answer":0,"explanation":"אזולים מעכבים את סינתזת Ergosterol, מרכיב חיוני בממברנת התא, ובכך מעכבים את צמיחת הפטרייה במנגנון פונגוסטטי; הם יעילים בעיקר נגד דרמטופיטים ושמרים אך פחות יעילים נגד עובש."},
+{"q":"מהו מנגנון הפעולה של טרבינפין (Terbinafine) לפי המצגת?","options":["מעכב את האנזים squalene epoxidase, מה שמוביל לירידה בסינתזת ergosterol והצטברות squalene הגורמת למוות התא, במנגנון פונגיצידי","חוסם ישירות את קולטני ה-P2Y12","יוצר תעלות בממברנת הפטרייה בלבד","מעכב את סינתזת החלבון בריבוזום הפטרייתי"],"answer":0,"explanation":"טרבינפין מעכב את האנזים squalene epoxidase, מה שמוביל לירידה בסינתזת ergosterol ולהצטברות squalene בתא הפטרייתי, וכתוצאה מכך למוות התא – מנגנון פונגיצידי, ומתאים במיוחד לזיהומים ממושכים או עקשניים בדרמטופיטים."},
+{"q":"מדוע נקראת פטריית השמש (Tinea versicolor) בשם זה, לפי המצגת?","options":["כי העור שמתחת לפטרייה אינו משתזף מהשמש והפטרייה מפרישה חומצה אזאלית המעכבת יצירת פיגמנט","כי היא מופיעה רק בקיץ","כי היא נגרמת מחשיפה ישירה לשמש","כי היא מדבקת רק בשעות היום"],"answer":0,"explanation":"ההבדל בגווני העור נוצר כי העור שמתחת לפטרייה אינו משתזף מהשמש, ובנוסף הפטרייה מפרישה חומצה אזאלית (azelaic acid) המעכבת יצירת פיגמנט."},
+{"q":"מהו קו הטיפול הסיסטמי הראשון בפטרת ציפורניים (Onychomycosis) לפי המצגת?","options":["טרבינפין, ולאחריו איטרקונזול","פלוקונזול חד שבועי בלבד","אמפוטריצין B תמיד","חומצה בורית"],"answer":0,"explanation":"במידה ויש צורך בטיפול סיסטמי בפטרת ציפורניים, טרבינפין הוא קו ראשון ואחריו איטרקונזול; טיפול בפלוקונזול חד שבועי פחות יעיל לפי מחקרים."},
+{"q":"מהו הטיפול האנטי-פטרייתי המועדף כקו ראשון באספרגילוזיס פולשני לפי המצגת?","options":["ווריקונזול","פלוקונזול","טרבינפין","חומצה בורית"],"answer":0,"explanation":"לאחר קביעת האבחנה, הטיפול הראשוני באספרגילוזיס פולשני הוא עם ווריקונזול; למטופלים שלא סובלים את התרופה ניתן לשקול פוסקונזול או איזובוקונזול, וכן אמפוטריצין B או אכינוקנדינים."},
+{"q":"איזה אחוז מהנשים צפוי לסבול מקנדידיאזיס וגינלי (פטרת נרתיקית) לפחות פעם אחת במהלך חייהן, ומהו הטיפול המקובל במקרים קלים, לפי המצגת?","options":["כ־75% מהנשים; טיפול טופיקלי של 3 ימים או מנה בודדת של פלוקונזול 150 מ״ג","כ־10% מהנשים; טיפול אנטיביוטי בלבד","כ־95% מהנשים; ניתוח בלבד","כ־30% מהנשים; אין צורך בטיפול כלל"],"answer":0,"explanation":"כ־75% מהנשים יסבלו מקנדידיאזיס וגינלי לפחות פעם אחת במהלך חייהן; במקרים קלים הטיפול המקובל הוא טיפול טופיקלי של 3 ימים או מנה בודדת של פלוקונזול 150 מ״ג, עם יעילות של כ־90%."}
+];
+const QUESTIONS_PER_ROUND=20;
+let questions=[],index=0,score=0,answered=false;
+
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}}
+
+function startQuiz(){
+  questions=JSON.parse(JSON.stringify(originalQuestions));
+  shuffle(questions);
+  questions=questions.slice(0,Math.min(QUESTIONS_PER_ROUND,questions.length));
+  questions.forEach(q=>{const correct=q.options[q.answer];shuffle(q.options);q.answer=q.options.indexOf(correct)});
+  index=0;score=0;answered=false;renderQuestion();
+}
+
+function renderStart(){
+  progressBar.style.width='0%';
+  scoreText.textContent='מוכן להתחלה';
+  slide.innerHTML=`<section class="start"><div class="kicker">תרגול אינטראקטיבי</div><h1>זיהומים פטרייתיים והטיפול בהם</h1><p>20 שאלות אקראיות בכל סבב, עם משוב והסבר לאחר כל תשובה.</p><button class="ctrl primary" onclick="startQuiz()">התחלת התרגול</button><div class="small-note">${originalQuestions.length} שאלות במאגר • מבוסס על המדריך הקליני לאבחון, סיווג ופרמקולוגיה אנטי-פטרייתית</div></section>`;
+}
+
+function renderQuestion(){
+  answered=false;
+  const q=questions[index],L=['א','ב','ג','ד'];
+  scoreText.textContent=`שאלה ${index+1} מתוך ${questions.length} | ציון: ${score}`;
+  progressBar.style.width=`${index/questions.length*100}%`;
+  slide.innerHTML=`<div class="kicker">שאלה ${index+1} מתוך ${questions.length}</div><h1>${q.q}</h1><div class="options">${q.options.map((o,i)=>`<button class="option" onclick="answer(${i})">${L[i]}. ${o}</button>`).join('')}</div><div class="feedback" id="feedback"></div><div class="actions"><button class="ctrl secondary" onclick="renderStart()">התחלה מחדש</button><button class="ctrl primary" id="nextBtn" onclick="nextQuestion()" disabled>לשאלה הבאה</button></div>`;
+}
+
+function answer(choice){
+  if(answered)return;
+  answered=true;
+  const q=questions[index],buttons=[...document.querySelectorAll('.option')];
+  buttons.forEach((b,i)=>{b.disabled=true;if(i===q.answer)b.classList.add('correct')});
+  const ok=choice===q.answer;
+  if(ok)score++; else buttons[choice].classList.add('wrong');
+  const f=document.getElementById('feedback');
+  f.style.display='block';f.classList.add(ok?'good':'bad');
+  f.innerHTML=`<div class="feedback-title">${ok?'נכון מאוד!':'לא נכון'}</div><div>${q.explanation}</div>`;
+  nextBtn.disabled=false;
+  scoreText.textContent=`שאלה ${index+1} מתוך ${questions.length} | ציון: ${score}`;
+  progressBar.style.width=`${(index+1)/questions.length*100}%`;
+}
+
+function nextQuestion(){if(!answered)return;index++;index>=questions.length?renderFinish():renderQuestion()}
+
+function renderFinish(){
+  const p=Math.round(score/questions.length*100);
+  const msg=p>=90?'מצוין! שליטה חזקה מאוד בחומר.':p>=75?'טוב מאוד! נשארה רק חזרה קצרה.':p>=60?'עבודה טובה, כדאי לחזור על הנושאים שבהם טעית.':'כדאי לעבור שוב על המצגת ולנסות מחדש.';
+  scoreText.textContent='התרגול הסתיים';progressBar.style.width='100%';
+  slide.innerHTML=`<section class="finish"><div class="kicker">סיום התרגול</div><h1>כל הכבוד!</h1><div class="big-score">${score}/${questions.length}</div><p>${msg}</p><button class="ctrl primary" onclick="startQuiz()">תרגול חדש</button></section>`;
+}
+
+document.addEventListener("keydown", function(e) {
+  if (e.repeat) return;
+
+  if (e.key === "Backspace") {
+    e.preventDefault();
+    window.location.href = "index.html";
+    return;
+  }
+
+  if (index >= questions.length) {
+    if (e.key === "Enter") {
+      startQuiz();
+    }
+    return;
+  }
+
+  if (!answered) {
+    if (e.key === "1") answer(0);
+    else if (e.key === "2") answer(1);
+    else if (e.key === "3") answer(2);
+    else if (e.key === "4") answer(3);
+  }
+  else if (e.key === "Enter") {
+    nextQuestion();
+  }
+});
+
+renderStart();
+</script>
+</body>
+</html>

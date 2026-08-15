@@ -1,0 +1,61 @@
+<!doctype html><html lang="he" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>פרמקולוגיה בהריון והנקה</title>
+<style>
+:root{--bg:#07111f;--card:#101f34;--text:#f7fbff;--muted:#a8bad0;--blue:#55c7ff;--gold:#ffbd59;--green:#2ecc71;--red:#ff6672;--border:rgba(255,255,255,.12)}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;font-family:Arial,sans-serif;color:var(--text);background:var(--bg)}.app{max-width:950px;margin:auto;padding:78px 20px 24px}.topbar{display:flex;justify-content:space-between;gap:14px;align-items:center;margin-bottom:16px}.brand{font-weight:900}.score{color:var(--muted);font-weight:700}.progress{height:10px;background:#081522;border-radius:999px;overflow:hidden;margin-bottom:18px}.progress>div{height:100%;width:0;background:linear-gradient(90deg,var(--blue),var(--gold));transition:.35s}.slide{min-height:620px;background:var(--card);border:1px solid var(--border);border-radius:28px;padding:clamp(22px,5vw,46px);display:flex;flex-direction:column;justify-content:center}.kicker{color:var(--gold);font-weight:900;margin-bottom:12px}h1{font-size:clamp(25px,4vw,40px);line-height:1.45;margin:0 0 25px}.start,.finish{text-align:center}.start p,.finish p{color:var(--muted);font-size:18px;line-height:1.8}.options{display:grid;gap:13px}.option{border:1px solid var(--border);background:#0b192b;color:var(--text);padding:16px 18px;border-radius:15px;text-align:right;font-size:17px;cursor:pointer}.option.correct{border-color:var(--green);background:rgba(46,204,113,.17)}.option.wrong{border-color:var(--red);background:rgba(255,102,114,.17)}.feedback{display:none;margin-top:22px;border-radius:18px;padding:18px 20px;line-height:1.7;background:rgba(255,255,255,.06);border:1px solid var(--border)}.actions{display:flex;justify-content:space-between;gap:12px;margin-top:22px;flex-wrap:wrap}button.ctrl{border:0;border-radius:13px;padding:13px 19px;font-size:16px;font-weight:900;cursor:pointer}.primary{background:var(--blue);color:#06111e}.secondary{background:#162a45;color:var(--text)}button:disabled{opacity:.45}.big-score{font-size:76px;font-weight:950;color:var(--gold)}.menu-home{position:fixed;top:18px;left:18px;padding:12px 17px;border-radius:13px;background:#162a45;color:#fff;text-decoration:none;font-weight:900}@media(max-width:600px){.app{padding:68px 10px 10px}.slide{min-height:calc(100vh - 115px);border-radius:20px;padding:20px}}
+</style></head><body><a class="menu-home" href="index.html">← חזרה לתפריט</a><div class="app"><div class="topbar"><div class="brand">פרמקולוגיה בהריון והנקה</div><div class="score" id="scoreText">מוכן להתחלה</div></div><div class="progress"><div id="progressBar"></div></div><main class="slide" id="slide"></main></div>
+<script>
+const originalQuestions=[
+{"q":"מהו טווח הסיכון הבסיסי למומים מולדים מג'וריים בעובר, הקיים בכל הריון גם ללא כל חשיפה תרופתית?","options":["1-2%","3-5%","8-10%","15-20%"],"answer":1,"explanation":"בכל הריון קיים סיכון בסיסי של 3-5% למומים מולדים מג'וריים בעובר, ללא קשר לחשיפה תרופתית כלשהי."},
+{"q":"מהו הסיכון הבסיסי להפלות מוקדמות, הקיים בכל הריון?","options":["1-3%","5-8%","10-15%","20-25%"],"answer":2,"explanation":"הסיכון הבסיסי להפלות מוקדמות בכל הריון עומד על 10-15%, גם ללא כל חשיפה חיצונית."},
+{"q":"מה ההבדל המדויק בין חומר 'אמבריוטוקסי' לחומר 'טרטוגני'?","options":["אמבריוטוקסי משפיע רק בשליש הראשון, טרטוגני לאורך כל ההריון","אין הבדל אמיתי בין המונחים","טרטוגני חמור תמיד יותר מאמבריוטוקסי","טרטוגני גורם למום מבני ספציפי, בעוד אמבריוטוקסי מתאר כל פגיעה כללית בעובר — גם כזו שאינה מובילה למום מבני"],"answer":3,"explanation":"כל חומר טרטוגני הוא בהכרח אמבריוטוקסי, אך לא כל אמבריוטוקסיות היא טרטוגניות — טרטוגני מתייחס ספציפית ליכולת לגרום למום מבני."},
+{"q":"איזו תקופה בהריון מכונה 'שלב הכל או לא כלום'?","options":["שבועות 0-2","שבועות 3-12","שליש שני","שליש שלישי"],"answer":0,"explanation":"בשבועות 0-2 (ימים 0-16) עדיין לא קיים מחזור דם עוברי וטרם החל שלב התפתחות האיברים, ולכן חשיפה מזיקה גורמת למוות העובר או שהוא שורד ללא פגיעה."},
+{"q":"מהי התקופה הרגישה ביותר מבחינה טרטוגנית בהריון?","options":["שבוע האחרון לפני הלידה","שבועות 0-2","שבועות 3-12 (אורגנוגנזה)","שליש שלישי בלבד"],"answer":2,"explanation":"בשבועות 3-12 מתפתחים מרבית האיברים (אורגנוגנזיס), ולכן זו התקופה הרגישה ביותר מבחינה טרטוגנית."},
+{"q":"איזו תרופה משמשת הדוגמה הקלאסית להשפעה טרטוגנית, שגרמה למומים קשים בגפיים בשנות ה-60?","options":["פניצילין","תלידומיד","פראצטמול","ליתיום"],"answer":1,"explanation":"תלידומיד ניתנה לנשים הרות לטיפול בבחילות בשנות השישים, והביאה ברוב המקרים ללידת תינוקות עם מומים מולדים קשים, בעיקר בגפיים."},
+{"q":"מתי מומלץ להפסיק טיפול באיזוטרטינואין (Curatane) לפני היריון מתוכנן?","options":["חודש לפני ההיריון","שבוע לפני ההיריון","שנה לפני ההיריון","אין צורך להפסיק"],"answer":0,"explanation":"Isotretinoin (Curatane) הוא נגזרת ויטמין A עם השפעה טרטוגנית חמורה על מערכת העצבים, הפנים, הלב והשלד. מומלץ להפסיקו חודש לפני שמתכננים הריון."},
+{"q":"כמה זמן לאחר הפסקת אציטרטין (Neotigasone) אסור להיכנס להריון?","options":["חודש","3 שנים","שבועיים","חצי שנה"],"answer":1,"explanation":"בשונה מ-Isotretinoin, לאחר הפסקת Acitretin (Neotigasone) אסור להיכנס להריון למשך 3 שנים שלמות."},
+{"q":"מהו הסיכון העיקרי משימוש במעכבי ACE/ARBs בהריון?","options":["צביעת שיניים","עיכוב גדילה בלבד","פגיעה בהתפתחות הכליות של העובר ומיעוט מי שפיר","אין סיכון ידוע"],"answer":2,"explanation":"מעכבי ACE/ARBs הם התווית נגד בהריון, עם סיכון עיקרי בשליש 2 ו-3: פגיעה בהתפתחות הכליות של העובר, מיעוט מי שפיר ואף מוות עוברי."},
+{"q":"מדוע Methotrexate נחשב לתרופה בעלת אפקט טרטוגני ואמבריוטוקסי כאחד?","options":["הוא אנטגוניסט לחומצה פולית ומעכב סינתזת DNA, RNA וחלבון","הוא נספג לאט מהמעי בלבד","הוא מועבר רק דרך חלב אם","משפיע רק בשליש השלישי"],"answer":0,"explanation":"מטוטרקסט מעכב את האנזים Dihydrofolate reductase ופוגע בסינתזת DNA, RNA וחלבון — מה שגורם הן למומים מבניים ספציפיים והן למוות עוברי ועיכוב גדילה. הוא התווית נגד גם בהריון וגם בהנקה."},
+{"q":"מעבר לסיכון למומים מבניים, איזו השפעה נוספת מתוארת לחשיפה לחומצה ולפרואית (Valproic acid) בהריון?","options":["פגיעה בשיניים בלבד","עיכוב לידה","אין השפעה נוספת","השפעה נוירוהתפתחותית — ADHD, אוטיזם וירידה ב-IQ"],"answer":3,"explanation":"גם כשאין מומים גלויים, לחשיפה לחומצה ולפרואית בשליש הראשון יש השפעה נוירוהתפתחותית שמתבטאת ב-ADHD, אוטיזם וירידה ב-IQ."},
+{"q":"מהי הפגיעה העיקרית המיוחסת לליתיום בהריון?","options":["פגיעה בשיניים","מומים לבביים ופגיעה בצינור העצבי","עיכוב גדילה בלבד","פגיעה בשמיעה"],"answer":1,"explanation":"ליתיום אינו התווית נגד באופן מוחלט, אך נושא אזהרה חמורה — הפגיעה העיקרית היא מומים לבביים ופגיעה בצינור העצבי, ויש לשקול סיכון מול תועלת."},
+{"q":"אילו מומים מבניים משויכים לשימוש בקרבמזפין (Carbamazepine) בהריון?","options":["לב, חך, שלד וצינור עצבי","עיניים בלבד","כליות בלבד","אין מומים ידועים"],"answer":0,"explanation":"קרבמזפין, כמו ליתיום, אינו התווית נגד מוחלטת אך נושא אזהרה חמורה — עם סיכון למומים בלב, בחך, בשלד ובצינור העצבי."},
+{"q":"אילו מערכות נפגעות בעיקר עקב שימוש בוורפרין (Warfarin) בהריון?","options":["רק מערכת השמיעה","רק כליות","שלד ופנים, לב וכלי דם, ומערכת עצבים מרכזית","אין השפעה כלל"],"answer":2,"explanation":"וורפרין הוא התווית נגד בהריון — הוא גורם למומי שלד ופנים, פגיעה בלב ובכלי דם, ובמערכת העצבים המרכזית."},
+{"q":"מהי התופעה הידועה הקשורה לשימוש בדוקסיציקלין (Doxycycline) בהריון?","options":["ירידה ב-IQ","הפרעות קרישה","עלייה בלחץ דם","צביעה קבועה של השיניים ופגיעה בשלד"],"answer":3,"explanation":"דוקסיציקלין הוא התווית נגד בהריון ובהנקה בשל צביעה קבועה של שיני התינוק ופגיעה בהתפתחות השלד."},
+{"q":"מהי תרופת הבחירה לשיכוך כאבים והורדת חום לאורך כל תקופת ההריון?","options":["איבופרופן","אספירין במינון גבוה","פראצטמול","דיפירון"],"answer":2,"explanation":"פראצטמול הוא תרופת הבחירה בכל תקופת ההריון, במינון עד 4 גרם ליום ולפרק זמן קצר (עד 4 ימים), ללא עלייה מוכחת בסיכון למומים מולדים."},
+{"q":"החל מאיזה שבוע הריון ממליץ משרד הבריאות (עדכון 2020) להימנע משימוש ב-NSAIDs ללא היוועצות עם רופא?","options":["שבוע 12","שבוע 20","שבוע 28","שבוע 36"],"answer":1,"explanation":"בעדכון מ-5.11.2020, ההמלצה החמירה מ'משליש שלישי בלבד' להימנעות משימוש ב-NSAIDs כבר החל משבוע 20, בשל סיכון לפגיעה כלייתית עוברית ומיעוט מי שפיר."},
+{"q":"מהו המינון היומי המרבי של אספירין הנחשב בטוח לשימוש ממושך בהריון?","options":["עד 100 מ\"ג ליום","עד 500 מ\"ג ליום","עד גרם אחד ליום","אסור לחלוטין בכל מינון"],"answer":0,"explanation":"מינון נמוך של עד 100 מ\"ג אספירין ליום נחשב בטוח, ואף משפר תוצאות הריון בנשים בסיכון גבוה לרעלת הריון. מינון גבוה אסור בשליש השלישי."},
+{"q":"מהו המינון היומי המומלץ של חומצה פולית למניעת מומי צינור עצבי?","options":["2000-3000 מק\"ג ליום","100-200 מק\"ג ליום","400-600 מק\"ג ליום","אין המלצת מינון קבועה"],"answer":2,"explanation":"מומלץ ליטול לפחות 400-600 מק\"ג חומצה פולית ליום, רצוי החל מחודש לפני ההתעברות ועד סוף ההיריון."},
+{"q":"אילו מאפייני תרופה מגבירים את מעברה לחלב אם?","options":["משקל מולקולרי גבוה וקישור חזק לחלבון","חומציות גבוהה בלבד","משקל מולקולרי נמוך, מסיסות בשומן וקישור חלש לחלבון","מסיסות במים בלבד"],"answer":2,"explanation":"תרופות עם משקל מולקולרי נמוך, מסיסות גבוהה בשומן, וקישור חלש לחלבוני דם — עוברות ביתר קלות לחלב האם."}
+];let questions=[],index=0,score=0,answered=false;
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}}
+function startQuiz(){questions=JSON.parse(JSON.stringify(originalQuestions));shuffle(questions);questions.forEach(q=>{const c=q.options[q.answer];shuffle(q.options);q.answer=q.options.indexOf(c)});index=0;score=0;renderQuestion()}
+function renderStart(){progressBar.style.width='0%';scoreText.textContent='מוכן להתחלה';slide.innerHTML=`<section class="start"><div class="kicker">תרגול אינטראקטיבי</div><h1>פרמקולוגיה בהריון והנקה</h1><p>20 שאלות: סיכון בסיסי, טרטוגניות מול אמבריוטוקסיות, תרופות עם התוויית נגד, ועקרונות בטיחות בהנקה.</p><button class="ctrl primary" onclick="startQuiz()">התחלת התרגול</button></section>`}
+function renderQuestion(){answered=false;const q=questions[index],L=['א','ב','ג','ד'];scoreText.textContent=`שאלה ${index+1} מתוך ${questions.length} | ציון: ${score}`;progressBar.style.width=`${index/questions.length*100}%`;slide.innerHTML=`<div class="kicker">שאלה ${index+1} מתוך ${questions.length}</div><h1>${q.q}</h1><div class="options">${q.options.map((o,i)=>`<button class="option" onclick="answer(${i})">${L[i]}. ${o}</button>`).join('')}</div><div class="feedback" id="feedback"></div><div class="actions"><button class="ctrl secondary" onclick="renderStart()">התחלה מחדש</button><button class="ctrl primary" id="nextBtn" onclick="nextQuestion()" disabled>לשאלה הבאה</button></div>`}
+function answer(choice){if(answered)return;answered=true;const q=questions[index],bs=[...document.querySelectorAll('.option')];bs.forEach((b,i)=>{b.disabled=true;if(i===q.answer)b.classList.add('correct')});const ok=choice===q.answer;if(ok)score++;else bs[choice].classList.add('wrong');feedback.style.display='block';feedback.innerHTML=`<strong>${ok?'נכון מאוד!':'לא נכון'}</strong><br>${q.explanation}`;nextBtn.disabled=false;scoreText.textContent=`שאלה ${index+1} מתוך ${questions.length} | ציון: ${score}`;progressBar.style.width=`${(index+1)/questions.length*100}%`}
+function nextQuestion(){index++;index>=questions.length?finish():renderQuestion()}
+function finish(){scoreText.textContent='התרגול הסתיים';progressBar.style.width='100%';slide.innerHTML=`<section class="finish"><div class="kicker">סיום התרגול</div><h1>כל הכבוד!</h1><div class="big-score">${score}/${questions.length}</div><p>אפשר להתחיל שוב ולקבל סדר חדש.</p><button class="ctrl primary" onclick="startQuiz()">תרגול חדש</button></section>`}
+
+document.addEventListener("keydown", function(e) {
+  if (e.repeat) return;
+  if (e.key === "Backspace") {
+    e.preventDefault();
+    window.location.href = "index.html";
+    return;
+  }
+  if (index >= questions.length) {
+    if (e.key === "Enter") {
+      startQuiz();
+    }
+    return;
+  }
+  if (!answered) {
+    if (e.key === "1") answer(0);
+    else if (e.key === "2") answer(1);
+    else if (e.key === "3") answer(2);
+    else if (e.key === "4") answer(3);
+  }
+  else if (e.key === "Enter") {
+    nextQuestion();
+  }
+});
+renderStart();
+</script></body></html>
