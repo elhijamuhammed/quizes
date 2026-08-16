@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>חידון פסוריאזיס</title>
+<style>
+:root{--bg:#07111f;--card:#101f34;--text:#f7fbff;--muted:#a8bad0;--blue:#55c7ff;--gold:#ffbd59;--green:#2ecc71;--red:#ff6672;--border:rgba(255,255,255,.12)}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;font-family:Arial,sans-serif;color:var(--text);background:radial-gradient(circle at 10% 10%,rgba(85,199,255,.14),transparent 28%),radial-gradient(circle at 90% 90%,rgba(255,189,89,.10),transparent 28%),var(--bg)}
+.app{max-width:950px;margin:auto;padding:78px 20px 24px}
+.topbar{display:flex;justify-content:space-between;align-items:center;gap:14px;margin-bottom:16px}
+.brand{font-weight:900;font-size:18px}
+.score{color:var(--muted);font-weight:700}
+.progress{height:10px;background:#081522;border-radius:999px;overflow:hidden;margin-bottom:18px}
+.progress>div{height:100%;width:0;background:linear-gradient(90deg,var(--blue),var(--gold));transition:.35s}
+.slide{min-height:620px;background:linear-gradient(145deg,rgba(16,31,52,.98),rgba(11,24,41,.98));border:1px solid var(--border);border-radius:28px;padding:clamp(22px,5vw,46px);display:flex;flex-direction:column;justify-content:center;box-shadow:0 24px 70px rgba(0,0,0,.35)}
+.kicker{color:var(--gold);font-weight:900;margin-bottom:12px}
+h1{font-size:clamp(25px,4vw,40px);line-height:1.45;margin:0 0 25px}
+.start,.finish{text-align:center}
+.start p,.finish p{color:var(--muted);font-size:18px;line-height:1.8}
+.options{display:grid;gap:13px}
+.option{border:1px solid var(--border);background:#0b192b;color:var(--text);padding:16px 18px;border-radius:15px;text-align:right;font-size:17px;line-height:1.55;cursor:pointer;transition:.2s}
+.option:hover:not(:disabled){transform:translateY(-2px);border-color:var(--blue);background:#10223b}
+.option.correct{border-color:var(--green);background:rgba(46,204,113,.17)}
+.option.wrong{border-color:var(--red);background:rgba(255,102,114,.17)}
+.option:disabled{cursor:default}
+.feedback{display:none;margin-top:22px;border-radius:18px;padding:18px 20px;line-height:1.7;background:rgba(255,255,255,.06);border:1px solid var(--border)}
+.feedback.good{border-color:rgba(46,204,113,.55)} .feedback.bad{border-color:rgba(255,102,114,.55)}
+.feedback-title{font-weight:900;font-size:19px;margin-bottom:6px}
+.actions{display:flex;justify-content:space-between;gap:12px;margin-top:22px;flex-wrap:wrap}
+button.ctrl{border:0;border-radius:13px;padding:13px 19px;font-size:16px;font-weight:900;cursor:pointer}
+.primary{background:var(--blue);color:#06111e} .secondary{background:#162a45;color:var(--text);border:1px solid var(--border)!important}
+button.ctrl:disabled{opacity:.45;cursor:not-allowed}
+.big-score{font-size:76px;font-weight:950;color:var(--gold);margin:12px 0}
+.small-note{color:var(--muted);font-size:14px;margin-top:18px}
+.menu-home{position:fixed;top:18px;left:18px;z-index:9999;display:inline-flex;align-items:center;gap:8px;padding:12px 17px;border-radius:13px;background:#162a45;color:var(--text);border:1px solid var(--border);text-decoration:none;font-weight:900;font-size:15px;box-shadow:0 12px 30px rgba(0,0,0,.3)}
+.menu-home:hover{background:#21416b;transform:translateY(-2px)}
+@media(max-width:600px){.app{padding:68px 10px 10px}.slide{min-height:calc(100vh - 115px);border-radius:20px;padding:20px}.option{font-size:16px;padding:14px}.topbar{font-size:14px}.menu-home{top:10px;left:10px;padding:10px 13px;font-size:14px}}
+</style>
+</head>
+<body>
+<a class="menu-home" href="index.html">← חזרה לתפריט</a>
+<div class="app">
+<div class="topbar"><div class="brand">פסוריאזיס</div><div class="score" id="scoreText">מוכן להתחלה</div></div>
+<div class="progress"><div id="progressBar"></div></div>
+<main class="slide" id="slide"></main>
+</div>
+<script>
+const originalQuestions=[{"q": "מהי פסוריאזיס לפי המצגת?", "options": ["מחלת עור דלקתית כרונית אוטואימונית", "זיהום חיידקי חריף של העור", "מחלה פטרייתית מדבקת", "תגובה אלרגית חולפת בלבד"], "answer": 0, "explanation": "פסוריאזיס היא מחלת עור דלקתית כרונית אוטואימונית, המתבטאת ברבדים אדומים עם קשקשת כסופה."}, {"q": "אילו מתווכים דלקתיים מרכזיים מעורבים בפסוריאזיס?", "options": ["TNF-alpha, IL-17 ו-IL-23", "אינסולין וגלוקגון", "דופמין וסרוטונין", "רנין ואלדוסטרון"], "answer": 0, "explanation": "במצגת מצוינים תאי T וציטוקינים דלקתיים, ובהם TNF-alpha, IL-17 ו-IL-23."}, {"q": "מה גורמת הדלקת בפסוריאזיס לתאי העור?", "options": ["שגשוג מהיר של תאי עור", "הפסקה מוחלטת של חלוקת תאים", "הרס מיידי של מלנוציטים", "ירידה קבועה בזרימת הדם לעור"], "answer": 0, "explanation": "הדלקת גורמת לשגשוג מהיר של תאי עור."}, {"q": "מהי שכיחות הפסוריאזיס המצוינת במצגת?", "options": ["כ-2%–3% מהאוכלוסייה", "כ-20%–30% מהאוכלוסייה", "פחות מ-0.01%", "כ-50% מהאוכלוסייה"], "answer": 0, "explanation": "לפי המצגת, פסוריאזיס מופיעה בכ-2%–3% מהאוכלוסייה."}, {"q": "איזה סוג פסוריאזיס הוא השכיח ביותר?", "options": ["Plaque psoriasis", "Pustular psoriasis", "Inverse psoriasis", "Guttate psoriasis"], "answer": 0, "explanation": "Plaque psoriasis הוא הסוג השכיח ביותר."}, {"q": "איזה מהבאים מופיע כגורם שעלול להחמיר פסוריאזיס?", "options": ["סטרס", "שתיית מים", "שינה תקינה", "פעילות גופנית מתונה"], "answer": 0, "explanation": "במצגת מופיעים סטרס, עישון, זיהומים ואלכוהול כגורמים שעלולים להחמיר פסוריאזיס."}, {"q": "איזה תסמין אופייני לפסוריאזיס לפי המצגת?", "options": ["רבדים אדומים עם קשקשת לבנה-כסופה", "פריחה ירוקה ללא קשקשת", "צהבת", "שלפוחיות בפה בלבד"], "answer": 0, "explanation": "התסמין הקלאסי הוא רבדים אדומים עם קשקשת לבנה-כסופה, ולעיתים יש גרד, כאב ויובש."}, {"q": "באילו אזורים פסוריאזיס שכיח במיוחד?", "options": ["קרקפת, מרפקים וברכיים", "רק בכפות הרגליים", "רק בלשון", "רק בבטן"], "answer": 0, "explanation": "במצגת מצוינים קרקפת, מרפקים וברכיים כאזורים שכיחים, ולעיתים גם גב תחתון."}, {"q": "איזו מעורבות נוספת יכולה להופיע בפסוריאזיס?", "options": ["פגיעה בציפורניים", "קטרקט בכל החולים", "אובדן שמיעה קבוע", "שבר בצוואר הירך"], "answer": 0, "explanation": "לעיתים יש פגיעה בציפורניים."}, {"q": "כאיזה אחוז מהחולים מפתחים Psoriatic Arthritis?", "options": ["כ-30%", "כ-1%", "כ-70%", "100%"], "answer": 0, "explanation": "לפי המצגת, כ-30% מהחולים מפתחים דלקת מפרקים פסוריאטית."}, {"q": "מה עשוי להופיע ב-Psoriatic Arthritis?", "options": ["כאב, נפיחות ונוקשות מפרקים", "רק כאב ראש", "רק שיעול", "רק ירידה בראייה"], "answer": 0, "explanation": "התסמינים כוללים כאב, נפיחות ונוקשות מפרקים, ואבחון מוקדם חשוב למניעת נזק."}, {"q": "כיצד נעשית האבחנה של פסוריאזיס ברוב המקרים?", "options": ["אבחנה קלינית", "תמיד CT", "תמיד MRI", "רק בדיקת דם"], "answer": 0, "explanation": "האבחנה היא לרוב קלינית; ביופסיית עור מבוצעת במקרים מסוימים."}, {"q": "איזה טיפול מקומי מפחית דלקת בפסוריאזיס?", "options": ["Topical Steroids", "אנטיביוטיקה תוך-ורידית לכל חולה", "אינסולין", "משתנים"], "answer": 0, "explanation": "Topical Steroids מפחיתים דלקת. במצגת מופיעים גם Vitamin D analogs שמאטים שגשוג תאי עור."}, {"q": "מה עלול לקרות בשימוש ממושך בסטרואידים מקומיים?", "options": ["אטרופיית עור", "עלייה בצפיפות העצם", "היפרטרופיה של העור", "ללא תופעות לוואי"], "answer": 0, "explanation": "שימוש ממושך בסטרואידים מקומיים עלול לגרום לאטרופיית עור."}, {"q": "איזה סוג Phototherapy מצוין כיעיל בחולים רבים?", "options": ["UVB Narrow Band", "אור אינפרא-אדום בלבד", "צילום רנטגן", "אולטרסאונד"], "answer": 0, "explanation": "UVB Narrow Band מצוין כיעיל בחולים רבים. בנוסף מוזכר PUVA המשלב פסורלן ו-UVA."}, {"q": "מהו מנגנון הפעולה של Methotrexate לפי המצגת?", "options": ["Folate antagonist המדכא פעילות חיסונית", "TNF-alpha agonist", "IL-17 activator", "Calcineurin activator"], "answer": 0, "explanation": "Methotrexate הוא folate antagonist המדכא פעילות חיסונית."}, {"q": "איזו תופעת לוואי חשובה של Methotrexate מופיעה במצגת?", "options": ["Hepatotoxicity", "שיפור בתפקוד הכבד", "Hypoglycemia בלבד", "עלייה בשמיעה"], "answer": 0, "explanation": "תופעות הלוואי כוללות hepatotoxicity, בחילה ודיכוי מח עצם."}, {"q": "מהי Contraindication של Methotrexate לפי המצגת?", "options": ["הריון או מחלת כבד", "יתר לחץ דם קל", "אלרגיה לדגים", "LDL גבוה"], "answer": 0, "explanation": "Pregnancy ו-liver disease מופיעות כ-Contraindications."}, {"q": "מהו מנגנון הפעולה של Cyclosporine?", "options": ["Calcineurin inhibitor המדכא תאי T", "חסימת IL-23 בלבד", "עיכוב ספיגת כולסטרול", "הפעלת תאי T"], "answer": 0, "explanation": "Cyclosporine הוא calcineurin inhibitor המדכא תאי T."}, {"q": "איזו תופעת לוואי של Cyclosporine מופיעה במצגת?", "options": ["Nephrotoxicity", "Hypocalcemia", "Fishy taste", "שיעול יבש"], "answer": 0, "explanation": "במצגת מופיעים nephrotoxicity, hypertension וזיהומים."}, {"q": "מהי Contraindication של Cyclosporine לפי המצגת?", "options": ["מחלת כליה", "הריון בלבד", "אלרגיה לדגים", "אסתמה"], "answer": 0, "explanation": "Renal disease מופיעה כ-Contraindication."}, {"q": "מהו Acitretin?", "options": ["רטינואיד סיסטמי", "TNF-alpha inhibitor", "אנטיביוטיקה", "סטרואיד מקומי"], "answer": 0, "explanation": "Acitretin הוא רטינואיד סיסטמי."}, {"q": "איזו תכונה חשובה של Acitretin מודגשת במצגת?", "options": ["Teratogenicity", "בטוח בהריון", "מונע זיהומים", "מוריד לחץ דם"], "answer": 0, "explanation": "בין תופעות הלוואי מצוינות dry skin, hyperlipidemia ו-teratogenicity; הריון הוא contraindication."}, {"q": "איזה זוג תרופות הוא TNF-alpha inhibitors לפי המצגת?", "options": ["Adalimumab (Humira) ו-Infliximab (Remicade)", "Guselkumab ו-Risankizumab", "Secukinumab ו-Ixekizumab", "Methotrexate ו-Acitretin"], "answer": 0, "explanation": "Adalimumab ו-Infliximab הם TNF-alpha inhibitors."}, {"q": "איזו תופעת לוואי חשובה של TNF-alpha inhibitors מופיעה במצגת?", "options": ["זיהומים ו-TB reactivation", "אטרופיית עור", "Hyperlipidemia בלבד", "Hypocalcemia"], "answer": 0, "explanation": "המצגת מציינת זיהומים ו-TB reactivation."}, {"q": "מהי Contraindication ל-TNF-alpha inhibitors לפי המצגת?", "options": ["Active infection", "LDL גבוה", "אוסטאופורוזיס", "מיגרנה"], "answer": 0, "explanation": "Active infection מופיעה כ-Contraindication."}, {"q": "איזה זוג תרופות הוא IL-17 inhibitors?", "options": ["Secukinumab (Cosentyx) ו-Ixekizumab (Taltz)", "Adalimumab ו-Infliximab", "Guselkumab ו-Risankizumab", "Cyclosporine ו-Methotrexate"], "answer": 0, "explanation": "Secukinumab ו-Ixekizumab הם IL-17 inhibitors."}, {"q": "איזו תופעת לוואי אופיינית ל-IL-17 inhibitors לפי המצגת?", "options": ["Candidiasis", "שבר בעצם", "Bradycardia", "Hypocalcemia"], "answer": 0, "explanation": "Candidiasis וזיהומים בדרכי הנשימה העליונות מופיעים כתופעות לוואי."}, {"q": "מהי Contraindication ל-IL-17 inhibitors?", "options": ["Active infection", "LDL גבוה", "יתר לחץ דם קל", "מיגרנה"], "answer": 0, "explanation": "Active infection מופיעה כ-Contraindication."}, {"q": "איזה זוג תרופות הוא IL-23 inhibitors?", "options": ["Guselkumab (Tremfya) ו-Risankizumab (Skyrizi)", "Adalimumab ו-Infliximab", "Secukinumab ו-Ixekizumab", "Cyclosporine ו-Acitretin"], "answer": 0, "explanation": "Guselkumab ו-Risankizumab הם IL-23 inhibitors."}, {"q": "איזו תופעת לוואי של IL-23 inhibitors מופיעה במצגת?", "options": ["זיהומים בדרכי הנשימה העליונות וכאב ראש", "Candidiasis בלבד", "Nephrotoxicity", "אטרופיית עור"], "answer": 0, "explanation": "במצגת מופיעים upper respiratory infections ו-headache."}, {"q": "מהי Contraindication ל-IL-23 inhibitors?", "options": ["Severe infection", "הריון", "מחלת כליה", "אלרגיה לדגים"], "answer": 0, "explanation": "Severe infection מופיעה כ-Contraindication."}, {"q": "מה חשוב לבצע לפני התחלת טיפול ביולוגי?", "options": ["סקר לשחפת והפטיטיס", "DEXA לכל מטופל", "בדיקת שמיעה בלבד", "בדיקת גלוקוז בלבד"], "answer": 0, "explanation": "לפי המצגת, יש לבצע סקר לשחפת והפטיטיס לפני טיפול ביולוגי."}, {"q": "איזה מעקב מוזכר כחלק מבטיחות הטיפול?", "options": ["בדיקות דם ותפקודי כבד", "MRI שבועי", "צילום חזה יומי", "DEXA יומי"], "answer": 0, "explanation": "המצגת מציינת מעקב של בדיקות דם ותפקודי כבד."}];
+const QUESTIONS_PER_ROUND=20;
+let questions=[],index=0,score=0,answered=false;
+
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}}
+
+function startQuiz(){
+  questions=JSON.parse(JSON.stringify(originalQuestions));
+  shuffle(questions);
+  questions=questions.slice(0,Math.min(QUESTIONS_PER_ROUND,questions.length));
+  questions.forEach(q=>{const correct=q.options[q.answer];shuffle(q.options);q.answer=q.options.indexOf(correct)});
+  index=0;score=0;answered=false;renderQuestion();
+}
+
+function renderStart(){
+  progressBar.style.width='0%';
+  scoreText.textContent='מוכן להתחלה';
+  slide.innerHTML=`<section class="start"><div class="kicker">תרגול אינטראקטיבי</div><h1>פסוריאזיס</h1><p>20 שאלות אקראיות בכל סבב, עם משוב והסבר לאחר כל תשובה.</p><button class="ctrl primary" onclick="startQuiz()">התחלת התרגול</button><div class="small-note">${originalQuestions.length} שאלות במאגר • 20 בכל סבב • מבוסס רק על המצגת</div></section>`;
+}
+
+function renderQuestion(){
+  answered=false;
+  const q=questions[index],L=['א','ב','ג','ד'];
+  scoreText.textContent=`שאלה ${index+1} מתוך ${questions.length} | ציון: ${score}`;
+  progressBar.style.width=`${index/questions.length*100}%`;
+  slide.innerHTML=`<div class="kicker">שאלה ${index+1} מתוך ${questions.length}</div><h1>${q.q}</h1><div class="options">${q.options.map((o,i)=>`<button class="option" onclick="answer(${i})">${L[i]}. ${o}</button>`).join('')}</div><div class="feedback" id="feedback"></div><div class="actions"><button class="ctrl secondary" onclick="renderStart()">התחלה מחדש</button><button class="ctrl primary" id="nextBtn" onclick="nextQuestion()" disabled>לשאלה הבאה</button></div>`;
+}
+
+function answer(choice){
+  if(answered)return;
+  answered=true;
+  const q=questions[index],buttons=[...document.querySelectorAll('.option')];
+  buttons.forEach((b,i)=>{b.disabled=true;if(i===q.answer)b.classList.add('correct')});
+  const ok=choice===q.answer;
+  if(ok)score++; else buttons[choice].classList.add('wrong');
+  const f=document.getElementById('feedback');
+  f.style.display='block';f.classList.add(ok?'good':'bad');
+  f.innerHTML=`<div class="feedback-title">${ok?'נכון מאוד!':'לא נכון'}</div><div>${q.explanation}</div>`;
+  nextBtn.disabled=false;
+  scoreText.textContent=`שאלה ${index+1} מתוך ${questions.length} | ציון: ${score}`;
+  progressBar.style.width=`${(index+1)/questions.length*100}%`;
+}
+
+function nextQuestion(){if(!answered)return;index++;index>=questions.length?renderFinish():renderQuestion()}
+
+function renderFinish(){
+  const p=Math.round(score/questions.length*100);
+  const msg=p>=90?'מצוין! שליטה חזקה מאוד בחומר.':p>=75?'טוב מאוד! נשארה רק חזרה קצרה.':p>=60?'עבודה טובה, כדאי לחזור על הנושאים שבהם טעית.':'כדאי לעבור שוב על המצגת ולנסות מחדש.';
+  scoreText.textContent='התרגול הסתיים';progressBar.style.width='100%';
+  slide.innerHTML=`<section class="finish"><div class="kicker">סיום התרגול</div><h1>כל הכבוד!</h1><div class="big-score">${score}/${questions.length}</div><p>${msg}</p><button class="ctrl primary" onclick="startQuiz()">תרגול חדש</button></section>`;
+}
+
+document.addEventListener("keydown", function(e) {
+  if (e.repeat) return;
+
+  // Backspace = الرجوع للصفحة الرئيسية
+  if (e.key === "Backspace") {
+    e.preventDefault();
+    window.location.href = "index.html";
+    return;
+  }
+
+  // إذا انتهى الامتحان → Enter يبدأ امتحان جديد
+  if (index >= questions.length) {
+    if (e.key === "Enter") {
+      startQuiz();
+    }
+    return;
+  }
+
+  // أثناء السؤال → 1-4 لاختيار الإجابة
+  if (!answered) {
+    if (e.key === "1") answer(0);
+    else if (e.key === "2") answer(1);
+    else if (e.key === "3") answer(2);
+    else if (e.key === "4") answer(3);
+  }
+
+  // بعد الإجابة → Enter للسؤال التالي
+  else if (e.key === "Enter") {
+    nextQuestion();
+  }
+});
+
+
+renderStart();
+</script>
+<!-- AADS AD -->
+<div id="ad-container"></div>
+
+<script src="ad.js"></script>
+</body>
+</html>

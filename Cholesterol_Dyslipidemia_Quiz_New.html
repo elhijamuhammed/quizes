@@ -1,0 +1,762 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>כולסטרול ודיסליפידמיה</title>
+<style>
+:root{--bg:#07111f;--card:#101f34;--text:#f7fbff;--muted:#a8bad0;--blue:#55c7ff;--gold:#ffbd59;--green:#2ecc71;--red:#ff6672;--border:rgba(255,255,255,.12)}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;font-family:Arial,sans-serif;color:var(--text);background:radial-gradient(circle at 10% 10%,rgba(85,199,255,.14),transparent 28%),radial-gradient(circle at 90% 90%,rgba(255,189,89,.10),transparent 28%),var(--bg)}
+.app{max-width:950px;margin:auto;padding:78px 20px 24px}
+.topbar{display:flex;justify-content:space-between;align-items:center;gap:14px;margin-bottom:16px}
+.brand{font-weight:900;font-size:18px}
+.score{color:var(--muted);font-weight:700}
+.progress{height:10px;background:#081522;border-radius:999px;overflow:hidden;margin-bottom:18px}
+.progress>div{height:100%;width:0;background:linear-gradient(90deg,var(--blue),var(--gold));transition:.35s}
+.slide{min-height:620px;background:linear-gradient(145deg,rgba(16,31,52,.98),rgba(11,24,41,.98));border:1px solid var(--border);border-radius:28px;padding:clamp(22px,5vw,46px);display:flex;flex-direction:column;justify-content:center;box-shadow:0 24px 70px rgba(0,0,0,.35)}
+.kicker{color:var(--gold);font-weight:900;margin-bottom:12px}
+h1{font-size:clamp(25px,4vw,40px);line-height:1.45;margin:0 0 25px}
+.start,.finish{text-align:center}
+.start p,.finish p{color:var(--muted);font-size:18px;line-height:1.8}
+.options{display:grid;gap:13px}
+.option{border:1px solid var(--border);background:#0b192b;color:var(--text);padding:16px 18px;border-radius:15px;text-align:right;font-size:17px;line-height:1.55;cursor:pointer;transition:.2s}
+.option:hover:not(:disabled){transform:translateY(-2px);border-color:var(--blue);background:#10223b}
+.option.correct{border-color:var(--green);background:rgba(46,204,113,.17)}
+.option.wrong{border-color:var(--red);background:rgba(255,102,114,.17)}
+.option:disabled{cursor:default}
+.feedback{display:none;margin-top:22px;border-radius:18px;padding:18px 20px;line-height:1.7;background:rgba(255,255,255,.06);border:1px solid var(--border)}
+.feedback.good{border-color:rgba(46,204,113,.55)}
+.feedback.bad{border-color:rgba(255,102,114,.55)}
+.feedback-title{font-weight:900;font-size:19px;margin-bottom:6px}
+.actions{display:flex;justify-content:space-between;gap:12px;margin-top:22px;flex-wrap:wrap}
+button.ctrl{border:0;border-radius:13px;padding:13px 19px;font-size:16px;font-weight:900;cursor:pointer}
+.primary{background:var(--blue);color:#06111e}
+.secondary{background:#162a45;color:var(--text);border:1px solid var(--border)!important}
+button.ctrl:disabled{opacity:.45;cursor:not-allowed}
+.big-score{font-size:76px;font-weight:950;color:var(--gold);margin:12px 0}
+.small-note{color:var(--muted);font-size:14px;margin-top:18px}
+.menu-home{position:fixed;top:18px;left:18px;z-index:9999;display:inline-flex;align-items:center;gap:8px;padding:12px 17px;border-radius:13px;background:#162a45;color:var(--text);border:1px solid var(--border);text-decoration:none;font-weight:900;font-size:15px;box-shadow:0 12px 30px rgba(0,0,0,.3)}
+.menu-home:hover{background:#21416b;transform:translateY(-2px)}
+@media(max-width:600px){.app{padding:68px 10px 10px}.slide{min-height:calc(100vh - 115px);border-radius:20px;padding:20px}.option{font-size:16px;padding:14px}.topbar{font-size:14px}.menu-home{top:10px;left:10px;padding:10px 13px;font-size:14px}}
+</style>
+</head>
+<body>
+<a class="menu-home" href="index.html">← חזרה לתפריט</a>
+
+<div class="app">
+  <div class="topbar">
+    <div class="brand">כולסטרול ודיסליפידמיה</div>
+    <div class="score" id="scoreText">מוכן להתחלה</div>
+  </div>
+  <div class="progress"><div id="progressBar"></div></div>
+  <main class="slide" id="slide"></main>
+</div>
+
+<script>
+const originalQuestions = [
+  {
+    q:"מהו כולסטרול לפי המצגת?",
+    options:[
+      "חומר שומני החיוני לבניית תאים, הורמונים וויטמין D",
+      "חלבון שמיוצר רק בשרירים",
+      "ויטמין מסיס במים",
+      "אנזים המפרק טריגליצרידים"
+    ],
+    answer:0,
+    explanation:"לפי המצגת, כולסטרול הוא חומר שומני החיוני לבניית תאים, הורמונים וויטמין D."
+  },
+  {
+    q:"היכן מיוצר כולסטרול לפי המצגת?",
+    options:[
+      "בכבד וגם מגיע מהמזון",
+      "רק בכליות",
+      "רק במעי",
+      "רק בשרירי השלד"
+    ],
+    answer:0,
+    explanation:"הכולסטרול מיוצר בכבד וגם מגיע מהמזון."
+  },
+  {
+    q:"מהו LDL?",
+    options:[
+      "הכולסטרול הרע",
+      "הכולסטרול הטוב",
+      "ויטמין מסיס בשומן",
+      "אנזים כבדי"
+    ],
+    answer:0,
+    explanation:"LDL מכונה במצגת 'הכולסטרול הרע' משום שהוא קשור להצטברות שומן בדפנות כלי הדם."
+  },
+  {
+    q:"מה עלול לקרות כאשר LDL מצטבר בדפנות כלי הדם?",
+    options:[
+      "נוצרת טרשת עורקים",
+      "HDL עולה",
+      "הלחץ בעורקים תמיד יורד",
+      "נוצר מחסור בויטמין D"
+    ],
+    answer:0,
+    explanation:"עודף LDL מוביל להצטברות שומן בדפנות כלי הדם ועלול להוביל לטרשת עורקים."
+  },
+  {
+    q:"מהו יעד הטיפול העיקרי ב-LDL בחולים בסיכון גבוה?",
+    options:[
+      "להפחית LDL ככל האפשר",
+      "להעלות LDL",
+      "להפחית HDL",
+      "להעלות טריגליצרידים"
+    ],
+    answer:0,
+    explanation:"לפי המצגת, בחולים בסיכון גבוה יעד הטיפול הוא להפחית LDL ככל האפשר."
+  },
+  {
+    q:"מהו HDL?",
+    options:[
+      "הכולסטרול הטוב",
+      "הכולסטרול הרע",
+      "טריגליצריד",
+      "חלבון קרישה"
+    ],
+    answer:0,
+    explanation:"HDL מכונה במצגת 'הכולסטרול הטוב'."
+  },
+  {
+    q:"מהו תפקיד מרכזי של HDL?",
+    options:[
+      "לסייע בפינוי כולסטרול מהדם אל הכבד",
+      "לגרום להצטברות כולסטרול בדפנות עורקים",
+      "להעלות טריגליצרידים",
+      "לחסום פעילות גופנית"
+    ],
+    answer:0,
+    explanation:"HDL מסייע בפינוי כולסטרול מהדם אל הכבד."
+  },
+  {
+    q:"מה נכון לגבי ערכי HDL גבוהים?",
+    options:[
+      "הם קשורים להגנה מפני מחלות לב",
+      "הם תמיד מעלים סיכון לשבץ",
+      "הם גורמים לטרשת עורקים",
+      "הם מעידים על כשל כלייתי"
+    ],
+    answer:0,
+    explanation:"המצגת מציינת שערכים גבוהים של HDL קשורים להגנה מפני מחלות לב."
+  },
+  {
+    q:"מה יכולה פעילות גופנית לעשות ל-HDL?",
+    options:[
+      "להעלות HDL",
+      "להוריד HDL בהכרח",
+      "להפסיק ייצור HDL",
+      "אין לה שום השפעה לפי המצגת"
+    ],
+    answer:0,
+    explanation:"לפי המצגת, פעילות גופנית יכולה להעלות HDL."
+  },
+  {
+    q:"מה נכון לגבי טריגליצרידים?",
+    options:[
+      "ערכים גבוהים קשורים לסיכון מוגבר למחלות לב",
+      "הם תמיד מגנים מפני מחלות לב",
+      "אין קשר בינם לבין תזונה",
+      "הם נוצרים רק בזמן צום"
+    ],
+    answer:0,
+    explanation:"ערכים גבוהים של טריגליצרידים קשורים לסיכון מוגבר למחלות לב."
+  },
+  {
+    q:"אילו גורמים תזונתיים יכולים להעלות טריגליצרידים לפי המצגת?",
+    options:[
+      "תזונה עתירת סוכר ואלכוהול",
+      "ירקות ומים בלבד",
+      "פעילות גופנית",
+      "צריכת סיבים"
+    ],
+    answer:0,
+    explanation:"המצגת מציינת שתזונה עתירת סוכר ואלכוהול יכולה להעלות טריגליצרידים."
+  },
+  {
+    q:"למה עלולים לגרום טריגליצרידים גבוהים מאוד?",
+    options:[
+      "פנקריאטיטיס",
+      "אוסטאופורוזיס",
+      "אנמיה",
+      "ברדיקרדיה"
+    ],
+    answer:0,
+    explanation:"לפי המצגת, ערכים גבוהים מאוד של טריגליצרידים עלולים לגרום לפנקריאטיטיס."
+  },
+  {
+    q:"איזה מהבאים הוא גורם סיכון לכולסטרול גבוה לפי המצגת?",
+    options:[
+      "עישון",
+      "פעילות גופנית",
+      "תזונה מאוזנת",
+      "הפחתת סוכר"
+    ],
+    answer:0,
+    explanation:"המצגת מציינת עישון, השמנה, סוכרת ותזונה לקויה כגורמים שמעלים LDL."
+  },
+  {
+    q:"מה עוד משפיע על הסיכון לכולסטרול גבוה?",
+    options:[
+      "חוסר פעילות גופנית וגנטיקה",
+      "רק צבע עיניים",
+      "רק סוג דם",
+      "רק גובה"
+    ],
+    answer:0,
+    explanation:"חוסר פעילות גופנית וגנטיקה מוזכרים במצגת כגורמים משפיעים."
+  },
+  {
+    q:"מה כולל פרופיל שומנים בדם לפי המצגת?",
+    options:[
+      "HDL, LDL, טריגליצרידים וכולסטרול כללי",
+      "רק LDL",
+      "רק HDL וגלוקוז",
+      "קריאטינין ואלבומין"
+    ],
+    answer:0,
+    explanation:"בדיקת דם לפרופיל שומנים כוללת HDL, LDL, טריגליצרידים וכולסטרול כללי."
+  },
+  {
+    q:"מדוע חשוב לבצע מעקב אחרי פרופיל השומנים?",
+    options:[
+      "כדי להעריך תגובה לטיפול",
+      "כדי לאבחן שבר",
+      "כדי למדוד צפיפות עצם",
+      "כדי לקבוע סוג דם"
+    ],
+    answer:0,
+    explanation:"לפי המצגת, המעקב חשוב להערכת תגובה לטיפול."
+  },
+  {
+    q:"כיצד נקבע יעד LDL?",
+    options:[
+      "לפי רמת הסיכון האישית",
+      "אותו יעד לכל המטופלים",
+      "רק לפי גיל",
+      "רק לפי משקל"
+    ],
+    answer:0,
+    explanation:"יעדי LDL משתנים לפי רמת הסיכון, והטיפול מותאם אישית."
+  },
+  {
+    q:"מה קורה כאשר נוצרת הצטברות פלאק בעורקים?",
+    options:[
+      "היצרות כלי דם",
+      "התרחבות קבועה של כלי הדם",
+      "עלייה ב-HDL",
+      "ירידה בטריגליצרידים"
+    ],
+    answer:0,
+    explanation:"הצטברות פלאק גורמת להיצרות כלי הדם ועלולה להתקדם לחסימה מלאה."
+  },
+  {
+    q:"מה עלולה טרשת מתקדמת לגרום?",
+    options:[
+      "חסימה מלאה של כלי הדם",
+      "בניית כלי דם חדשים תמיד",
+      "ירידה מוחלטת בסיכון לשבץ",
+      "עלייה בספיגת כולסטרול"
+    ],
+    answer:0,
+    explanation:"לפי המצגת, טרשת מתקדמת עלולה לגרום לחסימה מלאה."
+  },
+  {
+    q:"מה הסיכון של כולסטרול גבוה למחלות לב?",
+    options:[
+      "מעלה סיכון להתקף לב ושבץ מוחי",
+      "מוריד סיכון לשבץ",
+      "מגן מפני התקף לב",
+      "לא משפיע על כלי הדם"
+    ],
+    answer:0,
+    explanation:"כולסטרול גבוה מעלה סיכון להתקף לב ושבץ מוחי."
+  },
+  {
+    q:"איזו תזונה מומלצת לפי המצגת כדי לסייע בהפחתת LDL?",
+    options:[
+      "תזונה ים תיכונית",
+      "תזונה עתירת שומן רווי",
+      "תזונה עתירת סוכר",
+      "תזונה ללא ירקות"
+    ],
+    answer:0,
+    explanation:"המצגת ממליצה על תזונה ים תיכונית לצורך הפחתת LDL."
+  },
+  {
+    q:"מה מומלץ להפחית בתזונה?",
+    options:[
+      "שומן רווי ומזון מעובד",
+      "ירקות",
+      "סיבים",
+      "פעילות גופנית"
+    ],
+    answer:0,
+    explanation:"מומלץ להפחית שומן רווי ומזון מעובד."
+  },
+  {
+    q:"מה מומלץ להגביר בתזונה?",
+    options:[
+      "ירקות, דגים וסיבים תזונתיים",
+      "שומן טראנס",
+      "סוכר",
+      "אלכוהול"
+    ],
+    answer:0,
+    explanation:"המצגת ממליצה על צריכת ירקות, דגים וסיבים תזונתיים."
+  },
+  {
+    q:"מה ההשפעה של פעילות אירובית על פרופיל השומנים?",
+    options:[
+      "מעלה HDL ומפחיתה LDL",
+      "מעלה LDL ומפחיתה HDL",
+      "מעלה טריגליצרידים בלבד",
+      "אין כל השפעה"
+    ],
+    answer:0,
+    explanation:"לפי המצגת, פעילות אירובית מעלה HDL ומפחיתה LDL."
+  },
+  {
+    q:"כמה פעילות גופנית מומלצת לפי המצגת?",
+    options:[
+      "לפחות 150 דקות בשבוע",
+      "10 דקות בחודש",
+      "רק פעם בשנה",
+      "אין המלצה"
+    ],
+    answer:0,
+    explanation:"המצגת ממליצה על לפחות 150 דקות פעילות בשבוע."
+  },
+  {
+    q:"מהי השפעת העישון לפי המצגת?",
+    options:[
+      "פוגע ב-HDL ומאיץ טרשת עורקים",
+      "מעלה HDL ומגן על העורקים",
+      "מוריד טריגליצרידים",
+      "מונע מחלות לב"
+    ],
+    answer:0,
+    explanation:"עישון פוגע ב-HDL ומאיץ טרשת עורקים."
+  },
+  {
+    q:"מהי השפעת אלכוהול בכמות גבוהה?",
+    options:[
+      "מעלה טריגליצרידים",
+      "מוריד LDL תמיד",
+      "מעלה HDL בלבד ללא סיכון",
+      "אין השפעה"
+    ],
+    answer:0,
+    explanation:"המצגת מציינת שאלכוהול בכמות גבוהה מעלה טריגליצרידים."
+  },
+  {
+    q:"מה נכון לגבי הפסקת עישון?",
+    options:[
+      "מפחיתה משמעותית סיכון לבבי",
+      "מעלה סיכון לבבי",
+      "לא משנה דבר",
+      "מורידה HDL"
+    ],
+    answer:0,
+    explanation:"לפי המצגת, הפסקת עישון מפחיתה משמעותית את הסיכון הלבבי."
+  },
+  {
+    q:"מהו טיפול קו ראשון בדיסליפידמיה לפי המצגת?",
+    options:[
+      "Statins",
+      "Omega-3 בלבד",
+      "Fibrates בלבד",
+      "Denosumab"
+    ],
+    answer:0,
+    explanation:"המצגת מציגה Statins כטיפול קו ראשון."
+  },
+  {
+    q:"מהו מנגנון הפעולה של Atorvastatin?",
+    options:[
+      "עיכוב HMG-CoA reductase",
+      "עיכוב ספיגת כולסטרול במעי",
+      "הפעלת PPAR-alpha",
+      "חסימת RANKL"
+    ],
+    answer:0,
+    explanation:"Atorvastatin הוא HMG-CoA reductase inhibitor."
+  },
+  {
+    q:"איזו תופעת לוואי אופיינית ל-Atorvastatin לפי המצגת?",
+    options:[
+      "Myalgia",
+      "Hypocalcemia",
+      "Fishy taste",
+      "Gallstones בלבד"
+    ],
+    answer:0,
+    explanation:"המצגת מציינת Myalgia ועלייה באנזימי כבד כתופעות לוואי."
+  },
+  {
+    q:"מהו Contraindication ל-Atorvastatin לפי המצגת?",
+    options:[
+      "מחלת כבד פעילה או הריון",
+      "מיגרנה",
+      "לחץ דם קל",
+      "אלרגיה לדגים"
+    ],
+    answer:0,
+    explanation:"המצגת מציינת Active liver disease ו-pregnancy כ-Contraindications."
+  },
+  {
+    q:"מהו Rosuvastatin (Crestor)?",
+    options:[
+      "סטטין עוצמתי",
+      "פיבראט",
+      "PCSK9 inhibitor",
+      "חומצת שומן אומגה-3"
+    ],
+    answer:0,
+    explanation:"המצגת מתארת Rosuvastatin כסטטין עוצמתי במיוחד."
+  },
+  {
+    q:"מהו מנגנון הפעולה של Rosuvastatin לפי המצגת?",
+    options:[
+      "עיכוב סינתזת כולסטרול בכבד",
+      "הפחתת ספיגת סידן",
+      "חסימת טריגליצרידים במעי",
+      "הפעלת RANKL"
+    ],
+    answer:0,
+    explanation:"Rosuvastatin מעכב סינתזת כולסטרול בכבד."
+  },
+  {
+    q:"איזו תופעת לוואי מופיעה עם Rosuvastatin?",
+    options:[
+      "כאבי שרירים וכאב ראש",
+      "שיעול יבש בלבד",
+      "עצירות בלבד",
+      "Osteonecrosis of the jaw"
+    ],
+    answer:0,
+    explanation:"במצגת מופיעים Muscle pain ו-headache."
+  },
+  {
+    q:"מהו מנגנון הפעולה של Ezetimibe?",
+    options:[
+      "עיכוב ספיגת כולסטרול במעי",
+      "עיכוב HMG-CoA reductase",
+      "הפעלת PPAR-alpha",
+      "הגברת פירוק עצם"
+    ],
+    answer:0,
+    explanation:"Ezetimibe מעכב ספיגת כולסטרול במעי."
+  },
+  {
+    q:"עם איזו קבוצת תרופות ניתן לשלב Ezetimibe לפי המצגת?",
+    options:[
+      "סטטינים",
+      "Bisphosphonates",
+      "Denosumab",
+      "Insulin"
+    ],
+    answer:0,
+    explanation:"המצגת מציינת שניתן לשלב Ezetimibe עם סטטינים."
+  },
+  {
+    q:"איזו תופעת לוואי של Ezetimibe מופיעה במצגת?",
+    options:[
+      "שלשול וכאב בטן",
+      "כאבי מפרקים בלבד",
+      "Hypocalcemia",
+      "Osteonecrosis"
+    ],
+    answer:0,
+    explanation:"המצגת מציינת Diarrhea ו-abdominal pain."
+  },
+  {
+    q:"מהו Contraindication ל-Ezetimibe לפי המצגת?",
+    options:[
+      "מחלת כבד קשה",
+      "אלרגיה לדגים",
+      "אסתמה",
+      "יתר לחץ דם"
+    ],
+    answer:0,
+    explanation:"Severe liver disease מופיעה כ-Contraindication."
+  },
+  {
+    q:"איזה מהבאים הוא PCSK9 inhibitor לפי המצגת?",
+    options:[
+      "Evolocumab (Repatha)",
+      "Fenofibrate",
+      "Atorvastatin",
+      "Ezetimibe"
+    ],
+    answer:0,
+    explanation:"Evolocumab (Repatha) ו-Alirocumab (Praluent) הם PCSK9 inhibitors."
+  },
+  {
+    q:"מהו מנגנון הפעולה של PCSK9 inhibitors לפי המצגת?",
+    options:[
+      "הגברת פעילות קולטני LDL",
+      "חסימת ספיגת כולסטרול במעי",
+      "הפעלת PPAR-alpha",
+      "עיכוב סינתזת טריגליצרידים בכבד"
+    ],
+    answer:0,
+    explanation:"המצגת מציינת כי PCSK9 inhibitors מגבירים פעילות של LDL receptors."
+  },
+  {
+    q:"מה מאפיין PCSK9 inhibitors מבחינת השפעה על LDL?",
+    options:[
+      "מפחיתים LDL בצורה משמעותית",
+      "מעלים LDL",
+      "משפיעים רק על HDL",
+      "אין להם השפעה על LDL"
+    ],
+    answer:0,
+    explanation:"המצגת מציינת כי הם מפחיתים LDL בצורה משמעותית."
+  },
+  {
+    q:"איזו תופעת לוואי של PCSK9 inhibitors מופיעה במצגת?",
+    options:[
+      "תגובה במקום ההזרקה ותסמינים דמויי שפעת",
+      "פגיעה בוושט",
+      "אבני כליה בלבד",
+      "שיעול יבש"
+    ],
+    answer:0,
+    explanation:"Injection reactions ו-flu-like symptoms מופיעים במצגת."
+  },
+  {
+    q:"מהו Contraindication ל-PCSK9 inhibitors לפי המצגת?",
+    options:[
+      "רגישות יתר קשה",
+      "הריון בלבד",
+      "מחלת קיבה קלה",
+      "LDL נמוך"
+    ],
+    answer:0,
+    explanation:"Severe hypersensitivity מופיעה כ-Contraindication."
+  },
+  {
+    q:"מהו Fenofibrate (Lipanthyl)?",
+    options:[
+      "Fibrate",
+      "Statin",
+      "PCSK9 inhibitor",
+      "Ezetimibe"
+    ],
+    answer:0,
+    explanation:"Fenofibrate (Lipanthyl) הוא Fibrate."
+  },
+  {
+    q:"מהו מנגנון הפעולה של Fibrates לפי המצגת?",
+    options:[
+      "הפעלת PPAR-alpha",
+      "עיכוב HMG-CoA reductase",
+      "עיכוב ספיגת כולסטרול במעי",
+      "חסימת PCSK9"
+    ],
+    answer:0,
+    explanation:"המצגת מציינת PPAR-alpha activation כמנגנון הפעולה."
+  },
+  {
+    q:"באילו ערכים Fibrates יעילים במיוחד?",
+    options:[
+      "טריגליצרידים גבוהים",
+      "HDL גבוה",
+      "LDL נמוך",
+      "סידן נמוך"
+    ],
+    answer:0,
+    explanation:"Fibrates יעילים במיוחד כאשר הטריגליצרידים גבוהים."
+  },
+  {
+    q:"איזו תופעת לוואי של Fenofibrate מופיעה במצגת?",
+    options:[
+      "אי נוחות במערכת העיכול ואבני מרה",
+      "כאב ראש בלבד",
+      "תגובה במקום ההזרקה",
+      "שיעול"
+    ],
+    answer:0,
+    explanation:"GI upset ו-gallstones מופיעים כתופעות לוואי."
+  },
+  {
+    q:"מהו Contraindication ל-Fibrates לפי המצגת?",
+    options:[
+      "מחלת כליה או כבד קשה",
+      "הריון בלבד",
+      "אלרגיה לדגים",
+      "יתר לחץ דם קל"
+    ],
+    answer:0,
+    explanation:"Severe renal/hepatic disease מופיעה כ-Contraindication."
+  },
+  {
+    q:"מהו מנגנון הפעולה של Omega-3 לפי המצגת?",
+    options:[
+      "הפחתת סינתזת טריגליצרידים בכבד",
+      "עיכוב HMG-CoA reductase",
+      "הפעלת קולטני LDL",
+      "עיכוב ספיגת כולסטרול במעי"
+    ],
+    answer:0,
+    explanation:"Omega-3 מפחית סינתזת טריגליצרידים בכבד."
+  },
+  {
+    q:"איזו תופעת לוואי של Omega-3 מופיעה במצגת?",
+    options:[
+      "טעם דגי ואי נוחות במערכת העיכול",
+      "Myalgia",
+      "אבני מרה בלבד",
+      "כאבי ראש בלבד"
+    ],
+    answer:0,
+    explanation:"Fishy taste ו-GI upset מופיעים במצגת."
+  },
+  {
+    q:"מהו Contraindication ל-Omega-3 לפי המצגת?",
+    options:[
+      "אלרגיה לדגים",
+      "מחלת כבד פעילה",
+      "הריון",
+      "יתר לחץ דם"
+    ],
+    answer:0,
+    explanation:"Fish allergy מופיעה כ-Contraindication."
+  }
+];
+
+const QUESTIONS_PER_ROUND=20;
+let questions=[],index=0,score=0,answered=false;
+
+function shuffle(a){
+  for(let i=a.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+}
+
+function startQuiz(){
+  questions=JSON.parse(JSON.stringify(originalQuestions));
+  shuffle(questions);
+  questions=questions.slice(0,Math.min(QUESTIONS_PER_ROUND,questions.length));
+  questions.forEach(q=>{
+    const correct=q.options[q.answer];
+    shuffle(q.options);
+    q.answer=q.options.indexOf(correct);
+  });
+  index=0;
+  score=0;
+  answered=false;
+  renderQuestion();
+}
+
+function renderStart(){
+  progressBar.style.width='0%';
+  scoreText.textContent='מוכן להתחלה';
+  slide.innerHTML=`
+    <section class="start">
+      <div class="kicker">תרגול אינטראקטיבי</div>
+      <h1>כולסטרול ודיסליפידמיה</h1>
+      <p>20 שאלות אקראיות בכל סבב, עם משוב והסבר לאחר כל תשובה.</p>
+      <button class="ctrl primary" onclick="startQuiz()">התחלת התרגול</button>
+      <div class="small-note">${originalQuestions.length} שאלות במאגר • מבוסס רק על המצגת שנשלחה</div>
+    </section>`;
+}
+
+function renderQuestion(){
+  answered=false;
+  const q=questions[index],L=['א','ב','ג','ד'];
+  scoreText.textContent=`שאלה ${index+1} מתוך ${questions.length} | ציון: ${score}`;
+  progressBar.style.width=`${index/questions.length*100}%`;
+  slide.innerHTML=`
+    <div class="kicker">שאלה ${index+1} מתוך ${questions.length}</div>
+    <h1>${q.q}</h1>
+    <div class="options">
+      ${q.options.map((o,i)=>`<button class="option" onclick="answer(${i})">${L[i]}. ${o}</button>`).join('')}
+    </div>
+    <div class="feedback" id="feedback"></div>
+    <div class="actions">
+      <button class="ctrl secondary" onclick="renderStart()">התחלה מחדש</button>
+      <button class="ctrl primary" id="nextBtn" onclick="nextQuestion()" disabled>לשאלה הבאה</button>
+    </div>`;
+}
+
+function answer(choice){
+  if(answered)return;
+  answered=true;
+  const q=questions[index],buttons=[...document.querySelectorAll('.option')];
+  buttons.forEach((b,i)=>{b.disabled=true;if(i===q.answer)b.classList.add('correct')});
+  const ok=choice===q.answer;
+  if(ok)score++; else buttons[choice].classList.add('wrong');
+  const f=document.getElementById('feedback');
+  f.style.display='block';
+  f.classList.add(ok?'good':'bad');
+  f.innerHTML=`<div class="feedback-title">${ok?'נכון מאוד!':'לא נכון'}</div><div>${q.explanation}</div>`;
+  nextBtn.disabled=false;
+  scoreText.textContent=`שאלה ${index+1} מתוך ${questions.length} | ציון: ${score}`;
+  progressBar.style.width=`${(index+1)/questions.length*100}%`;
+}
+
+function nextQuestion(){
+  if(!answered)return;
+  index++;
+  index>=questions.length?renderFinish():renderQuestion();
+}
+
+function renderFinish(){
+  const p=Math.round(score/questions.length*100);
+  const msg=p>=90?'מצוין! שליטה חזקה מאוד בחומר.':p>=75?'טוב מאוד! נשארה רק חזרה קצרה.':p>=60?'עבודה טובה, כדאי לחזור על הנושאים שבהם טעית.':'כדאי לעבור שוב על המצגת ולנסות מחדש.';
+  scoreText.textContent='התרגול הסתיים';
+  progressBar.style.width='100%';
+  slide.innerHTML=`
+    <section class="finish">
+      <div class="kicker">סיום התרגול</div>
+      <h1>כל הכבוד!</h1>
+      <div class="big-score">${score}/${questions.length}</div>
+      <p>${msg}</p>
+      <button class="ctrl primary" onclick="startQuiz()">תרגול חדש</button>
+    </section>`;
+}
+
+document.addEventListener("keydown", function(e){
+  if(e.repeat)return;
+
+  if(e.key==="Backspace"){
+    e.preventDefault();
+    window.location.href="index.html";
+    return;
+  }
+
+  if(!questions.length){
+    if(e.key==="Enter")startQuiz();
+    return;
+  }
+
+  if(index>=questions.length){
+    if(e.key==="Enter")startQuiz();
+    return;
+  }
+
+  if(!answered){
+    if(e.key==="1")answer(0);
+    else if(e.key==="2")answer(1);
+    else if(e.key==="3")answer(2);
+    else if(e.key==="4")answer(3);
+  }else if(e.key==="Enter"){
+    nextQuestion();
+  }
+});
+
+renderStart();
+</script>
+
+<!-- AADS AD -->
+<div id="ad-container"></div>
+<script src="ad.js"></script>
+
+</body>
+</html>

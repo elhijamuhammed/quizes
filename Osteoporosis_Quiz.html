@@ -1,0 +1,470 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>אוסטאופורוזיס</title>
+<style>
+:root{--bg:#07111f;--card:#101f34;--text:#f7fbff;--muted:#a8bad0;--blue:#55c7ff;--gold:#ffbd59;--green:#2ecc71;--red:#ff6672;--border:rgba(255,255,255,.12)}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;font-family:Arial,sans-serif;color:var(--text);background:radial-gradient(circle at 10% 10%,rgba(85,199,255,.14),transparent 28%),radial-gradient(circle at 90% 90%,rgba(255,189,89,.10),transparent 28%),var(--bg)}
+.app{max-width:950px;margin:auto;padding:78px 20px 24px}
+.topbar{display:flex;justify-content:space-between;align-items:center;gap:14px;margin-bottom:16px}
+.brand{font-weight:900;font-size:18px}
+.score{color:var(--muted);font-weight:700}
+.progress{height:10px;background:#081522;border-radius:999px;overflow:hidden;margin-bottom:18px}
+.progress>div{height:100%;width:0;background:linear-gradient(90deg,var(--blue),var(--gold));transition:.35s}
+.slide{min-height:620px;background:linear-gradient(145deg,rgba(16,31,52,.98),rgba(11,24,41,.98));border:1px solid var(--border);border-radius:28px;padding:clamp(22px,5vw,46px);display:flex;flex-direction:column;justify-content:center;box-shadow:0 24px 70px rgba(0,0,0,.35)}
+.kicker{color:var(--gold);font-weight:900;margin-bottom:12px}
+h1{font-size:clamp(25px,4vw,40px);line-height:1.45;margin:0 0 25px}
+.start,.finish{text-align:center}
+.start p,.finish p{color:var(--muted);font-size:18px;line-height:1.8}
+.options{display:grid;gap:13px}
+.option{border:1px solid var(--border);background:#0b192b;color:var(--text);padding:16px 18px;border-radius:15px;text-align:right;font-size:17px;line-height:1.55;cursor:pointer;transition:.2s}
+.option:hover:not(:disabled){transform:translateY(-2px);border-color:var(--blue);background:#10223b}
+.option.correct{border-color:var(--green);background:rgba(46,204,113,.17)}
+.option.wrong{border-color:var(--red);background:rgba(255,102,114,.17)}
+.option:disabled{cursor:default}
+.feedback{display:none;margin-top:22px;border-radius:18px;padding:18px 20px;line-height:1.7;background:rgba(255,255,255,.06);border:1px solid var(--border)}
+.feedback.good{border-color:rgba(46,204,113,.55)}
+.feedback.bad{border-color:rgba(255,102,114,.55)}
+.feedback-title{font-weight:900;font-size:19px;margin-bottom:6px}
+.actions{display:flex;justify-content:space-between;gap:12px;margin-top:22px;flex-wrap:wrap}
+button.ctrl{border:0;border-radius:13px;padding:13px 19px;font-size:16px;font-weight:900;cursor:pointer}
+.primary{background:var(--blue);color:#06111e}
+.secondary{background:#162a45;color:var(--text);border:1px solid var(--border)!important}
+button.ctrl:disabled{opacity:.45;cursor:not-allowed}
+.big-score{font-size:76px;font-weight:950;color:var(--gold);margin:12px 0}
+.small-note{color:var(--muted);font-size:14px;margin-top:18px}
+.menu-home{position:fixed;top:18px;left:18px;z-index:9999;display:inline-flex;align-items:center;gap:8px;padding:12px 17px;border-radius:13px;background:#162a45;color:var(--text);border:1px solid var(--border);text-decoration:none;font-weight:900;font-size:15px;box-shadow:0 12px 30px rgba(0,0,0,.3)}
+.menu-home:hover{background:#21416b;transform:translateY(-2px)}
+@media(max-width:600px){.app{padding:68px 10px 10px}.slide{min-height:calc(100vh - 115px);border-radius:20px;padding:20px}.option{font-size:16px;padding:14px}.topbar{font-size:14px}.menu-home{top:10px;left:10px;padding:10px 13px;font-size:14px}}
+</style>
+</head>
+<body>
+<a class="menu-home" href="index.html">← חזרה לתפריט</a>
+
+<div class="app">
+  <div class="topbar">
+    <div class="brand">אוסטאופורוזיס</div>
+    <div class="score" id="scoreText">מוכן להתחלה</div>
+  </div>
+
+  <div class="progress"><div id="progressBar"></div></div>
+  <main class="slide" id="slide"></main>
+</div>
+
+<script>
+const originalQuestions = [
+  {
+    q:"מהי אוסטאופורוזיס?",
+    options:[
+      "מחלה כרונית שבה העצם נעשית דקה, חלשה ושבירה יותר",
+      "מחלה זיהומית חריפה של העצם",
+      "מצב שבו מסת העצם עולה",
+      "דלקת של המפרקים בלבד"
+    ],
+    answer:0,
+    explanation:"אוסטאופורוזיס היא מחלה כרונית המאופיינת בירידה בצפיפות ובחוזק העצם, ולכן העצם נעשית דקה, חלשה ושבירה יותר."
+  },
+  {
+    q:"מהו הסיכון המרכזי באוסטאופורוזיס?",
+    options:[
+      "שברים לאחר נפילה קלה או אפילו חבלה מינימלית",
+      "עלייה בלחץ הדם",
+      "היפרגליקמיה",
+      "דלקת ריאות"
+    ],
+    answer:0,
+    explanation:"הסיכון העיקרי הוא שבר כתוצאה מטראומה קלה, בגלל הירידה בחוזק המכני של העצם."
+  },
+  {
+    q:"אילו אזורים שכיחים במיוחד לשברים אוסטאופורוטיים?",
+    options:[
+      "עמוד השדרה, צוואר הירך ושורש כף היד",
+      "הלסת בלבד",
+      "עצמות האף והאוזן",
+      "עצמות הגולגולת בלבד"
+    ],
+    answer:0,
+    explanation:"השברים האופייניים מופיעים בעיקר בעמוד השדרה, בצוואר הירך ובשורש כף היד."
+  },
+  {
+    q:"מה תפקיד האוסטאוקלסטים?",
+    options:[
+      "פירוק עצם",
+      "בניית עצם חדשה",
+      "ייצור ויטמין D",
+      "ייצור קולגן בעור"
+    ],
+    answer:0,
+    explanation:"אוסטאוקלסטים אחראים על פירוק העצם, בעוד אוסטאובלסטים בונים עצם חדשה."
+  },
+  {
+    q:"מה תפקיד האוסטאובלסטים?",
+    options:[
+      "בניית עצם חדשה",
+      "פירוק עצם",
+      "פירוק ויטמין D",
+      "הרס סחוס"
+    ],
+    answer:0,
+    explanation:"האוסטאובלסטים הם תאים בוני עצם."
+  },
+  {
+    q:"מה קורה באוסטאופורוזיס ביחס בין פירוק לבניית עצם?",
+    options:[
+      "הפירוק גובר על הבנייה",
+      "הבנייה גוברת על הפירוק",
+      "אין שום שינוי",
+      "רק הסחוס נפגע"
+    ],
+    answer:0,
+    explanation:"באוסטאופורוזיס פירוק העצם גובר על בניית העצם, ולכן מסת העצם יורדת."
+  },
+  {
+    q:"איזה מהבאים הוא גורם סיכון לאוסטאופורוזיס?",
+    options:[
+      "גיל מבוגר",
+      "פעילות גופנית סדירה",
+      "צריכת סידן מספקת",
+      "משקל גוף גבוה בלבד"
+    ],
+    answer:0,
+    explanation:"במצגת מצוינים בין גורמי הסיכון גיל מבוגר, מין נקבה, היסטוריה משפחתית, משקל גוף נמוך, עישון, אלכוהול, חוסר פעילות, תזונה דלה בסידן וסטרואידים."
+  },
+  {
+    q:"מדוע נשים לאחר גיל המעבר נמצאות בסיכון מוגבר?",
+    options:[
+      "בגלל ירידה משמעותית באסטרוגן",
+      "בגלל עלייה חדה באינסולין",
+      "בגלל עלייה בויטמין D",
+      "בגלל ירידה ב-LDL"
+    ],
+    answer:0,
+    explanation:"לאחר גיל המעבר רמת האסטרוגן יורדת. אסטרוגן מסייע בשמירה על מסת העצם, ולכן הירידה בו מזרזת איבוד עצם."
+  },
+  {
+    q:"מהי אוסטאופניה?",
+    options:[
+      "שלב מוקדם של ירידה בצפיפות העצם שעדיין אינו אוסטאופורוזיס",
+      "שבר בצוואר הירך",
+      "דלקת עצם חיידקית",
+      "מצב של צפיפות עצם גבוהה מהרגיל"
+    ],
+    answer:0,
+    explanation:"אוסטאופניה היא ירידה בצפיפות העצם שאינה מגיעה עדיין לרמת אוסטאופורוזיס."
+  },
+  {
+    q:"מה נכון לגבי תסמיני אוסטאופורוזיס?",
+    options:[
+      "לעיתים אין תסמינים עד לשבר הראשון",
+      "תמיד יש כאב חזק מההתחלה",
+      "תמיד יש חום",
+      "המחלה גורמת תמיד לנפיחות מפרקים"
+    ],
+    answer:0,
+    explanation:"אוסטאופורוזיס נקראת לעיתים מחלה שקטה משום שלרוב אין כאב בתחילת המחלה, ולעיתים השבר הראשון הוא הסימן הראשון."
+  },
+  {
+    q:"איזה מהבאים יכול להופיע באוסטאופורוזיס מתקדם?",
+    options:[
+      "כאבי גב, ירידה בגובה וגב כפוף",
+      "שיפור בגובה",
+      "עלייה במסת השריר",
+      "צהבת"
+    ],
+    answer:0,
+    explanation:"שברי חוליות יכולים לגרום לכאבי גב, ירידה בגובה וקיפוזיס."
+  },
+  {
+    q:"מהי בדיקת DEXA?",
+    options:[
+      "הבדיקה המרכזית למדידת צפיפות מינרלים בעצם",
+      "בדיקת דם לאסטרוגן",
+      "צילום חזה",
+      "בדיקת תפקודי כליה"
+    ],
+    answer:0,
+    explanation:"DEXA היא הבדיקה המרכזית למדידת צפיפות מינרלים בעצם, בעיקר בעמוד השדרה המותני ובצוואר הירך."
+  },
+  {
+    q:"איזה T-score נחשב תקין לפי המצגת?",
+    options:[
+      "עד ‎-1",
+      "מתחת ל-‎-2.5",
+      "בין ‎-3 ל-‎-4",
+      "רק 0 בדיוק"
+    ],
+    answer:0,
+    explanation:"לפי המצגת, T-score עד ‎-1 נחשב תקין."
+  },
+  {
+    q:"איזה T-score מתאים לאוסטאופניה?",
+    options:[
+      "בין ‎-1 ל-‎-2.5",
+      "מעל +2",
+      "מתחת ל-‎-4 בלבד",
+      "בין 0 ל+1"
+    ],
+    answer:0,
+    explanation:"T-score בין ‎-1 ל-‎-2.5 מתאים לאוסטאופניה."
+  },
+  {
+    q:"איזה T-score מתאים לאוסטאופורוזיס?",
+    options:[
+      "נמוך מ-‎-2.5",
+      "גבוה מ+1",
+      "בין 0 ל-1",
+      "בדיוק ‎-1"
+    ],
+    answer:0,
+    explanation:"T-score נמוך מ-‎-2.5 מתאים לאוסטאופורוזיס."
+  },
+  {
+    q:"מה חשיבות ויטמין D לבריאות העצם?",
+    options:[
+      "מסייע לספיגת סידן במעי ולשמירה על רמת סידן תקינה בדם",
+      "מונע כל פירוק עצם לחלוטין",
+      "מעלה LDL",
+      "חוסם אוסטאובלסטים"
+    ],
+    answer:0,
+    explanation:"ויטמין D מסייע לספיגת סידן במעי ולשמירה על רמת סידן תקינה בדם."
+  },
+  {
+    q:"איזה סוג פעילות גופנית מסייע לשמירה על מסת העצם?",
+    options:[
+      "תרגילי התנגדות ונשיאת משקל",
+      "מנוחה מוחלטת",
+      "שינה ממושכת",
+      "הימנעות מתנועה"
+    ],
+    answer:0,
+    explanation:"תרגילי התנגדות ונשיאת משקל מסייעים לשמירה על מסת העצם, ותרגילי שיווי משקל מפחיתים נפילות."
+  },
+  {
+    q:"מהו מנגנון הפעולה של Bisphosphonates?",
+    options:[
+      "עיכוב פעילות אוסטאוקלסטים והפחתת ספיגת עצם",
+      "הגברת פירוק עצם",
+      "חסימת ספיגת סידן במעי",
+      "הפעלת RANKL"
+    ],
+    answer:0,
+    explanation:"Bisphosphonates מעכבים פעילות אוסטאוקלסטים ומפחיתים ספיגת עצם, וכך מאטים איבוד עצם ומפחיתים סיכון לשברים."
+  },
+  {
+    q:"איזה מהבאים הוא Bisphosphonate שמופיע במצגת?",
+    options:[
+      "Alendronate (Fosamax)",
+      "Denosumab (Prolia)",
+      "Teriparatide (Forteo)",
+      "Romosozumab (Evenity)"
+    ],
+    answer:0,
+    explanation:"Alendronate (Fosamax), Risedronate (Actonel) ו-Zoledronic Acid (Aclasta/Reclast) מופיעים במצגת כ-Bisphosphonates."
+  },
+  {
+    q:"איזו תופעת לוואי נדירה אך חשובה של Bisphosphonates מופיעה במצגת?",
+    options:[
+      "Osteonecrosis of the jaw",
+      "היפרגליקמיה",
+      "דלקת ריאות",
+      "יתר לחץ דם"
+    ],
+    answer:0,
+    explanation:"במצגת מופיעים Osteonecrosis of the jaw וכן atypical femoral fracture כתופעות נדירות."
+  },
+  {
+    q:"איזה מצב הוא Contraindication ל-Bisphosphonates לפי המצגת?",
+    options:[
+      "Esophageal disorders",
+      "יתר לחץ דם קל",
+      "HDL נמוך",
+      "מיגרנה"
+    ],
+    answer:0,
+    explanation:"במצגת מצוינים הפרעות בוושט, חוסר יכולת לשבת או לעמוד אחרי מנה פומית, hypocalcemia ופגיעה כלייתית קשה."
+  },
+  {
+    q:"מהו מנגנון הפעולה של Denosumab?",
+    options:[
+      "נוגדן חד-שבטי נגד RANKL שמפחית יצירה ופעילות של אוסטאוקלסטים",
+      "אגוניסט של RANKL",
+      "מפעיל אוסטאוקלסטים",
+      "חוסם ויטמין D"
+    ],
+    answer:0,
+    explanation:"Denosumab הוא נוגדן חד-שבטי נגד RANKL וכך מפחית יצירה ופעילות של אוסטאוקלסטים ומקטין פירוק עצם."
+  },
+  {
+    q:"איזה מצב הוא Contraindication עיקרי ל-Denosumab לפי המצגת?",
+    options:[
+      "Hypocalcemia לא מתוקנת",
+      "LDL גבוה",
+      "יתר לחץ דם",
+      "אסתמה"
+    ],
+    answer:0,
+    explanation:"לפי המצגת, hypocalcemia לא מתוקנת היא Contraindication עיקרי ל-Denosumab."
+  },
+  {
+    q:"מה מאפיין תרופות בונות עצם כמו Teriparatide ו-Abaloparatide?",
+    options:[
+      "גירוי אוסטאובלסטים ובניית עצם חדשה",
+      "עיכוב מוחלט של אוסטאובלסטים",
+      "הפעלת אוסטאוקלסטים",
+      "חסימת ספיגת סידן"
+    ],
+    answer:0,
+    explanation:"תרופות אלו הן טיפול אנאבולי המגרה אוסטאובלסטים ובניית עצם חדשה, במיוחד במטופלים בסיכון גבוה."
+  },
+  {
+    q:"מהו מנגנון הפעולה של Romosozumab?",
+    options:[
+      "נוגדן נגד Sclerostin שמגביר בניית עצם ומפחית פירוק עצם",
+      "נוגדן נגד RANKL בלבד",
+      "Bisphosphonate פומי",
+      "מעכב ספיגת ויטמין D"
+    ],
+    answer:0,
+    explanation:"Romosozumab הוא נוגדן נגד Sclerostin, ולכן מגביר בניית עצם ומפחית פירוק עצם."
+  }
+];
+
+const QUESTIONS_PER_ROUND = 20;
+let questions = [], index = 0, score = 0, answered = false;
+
+function shuffle(a){
+  for(let i=a.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+}
+
+function startQuiz(){
+  questions=JSON.parse(JSON.stringify(originalQuestions));
+  shuffle(questions);
+  questions=questions.slice(0,Math.min(QUESTIONS_PER_ROUND,questions.length));
+  questions.forEach(q=>{
+    const correct=q.options[q.answer];
+    shuffle(q.options);
+    q.answer=q.options.indexOf(correct);
+  });
+  index=0;
+  score=0;
+  answered=false;
+  renderQuestion();
+}
+
+function renderStart(){
+  progressBar.style.width='0%';
+  scoreText.textContent='מוכן להתחלה';
+  slide.innerHTML=`
+    <section class="start">
+      <div class="kicker">תרגול אינטראקטיבי</div>
+      <h1>אוסטאופורוזיס</h1>
+      <p>20 שאלות אקראיות בכל סבב, עם משוב והסבר לאחר כל תשובה.</p>
+      <button class="ctrl primary" onclick="startQuiz()">התחלת התרגול</button>
+      <div class="small-note">${originalQuestions.length} שאלות במאגר • מבוסס על מצגת אוסטאופורוזיס</div>
+    </section>`;
+}
+
+function renderQuestion(){
+  answered=false;
+  const q=questions[index],L=['א','ב','ג','ד'];
+  scoreText.textContent=`שאלה ${index+1} מתוך ${questions.length} | ציון: ${score}`;
+  progressBar.style.width=`${index/questions.length*100}%`;
+  slide.innerHTML=`
+    <div class="kicker">שאלה ${index+1} מתוך ${questions.length}</div>
+    <h1>${q.q}</h1>
+    <div class="options">
+      ${q.options.map((o,i)=>`<button class="option" onclick="answer(${i})">${L[i]}. ${o}</button>`).join('')}
+    </div>
+    <div class="feedback" id="feedback"></div>
+    <div class="actions">
+      <button class="ctrl secondary" onclick="renderStart()">התחלה מחדש</button>
+      <button class="ctrl primary" id="nextBtn" onclick="nextQuestion()" disabled>לשאלה הבאה</button>
+    </div>`;
+}
+
+function answer(choice){
+  if(answered)return;
+  answered=true;
+  const q=questions[index],buttons=[...document.querySelectorAll('.option')];
+  buttons.forEach((b,i)=>{
+    b.disabled=true;
+    if(i===q.answer)b.classList.add('correct');
+  });
+  const ok=choice===q.answer;
+  if(ok)score++; else buttons[choice].classList.add('wrong');
+  const f=document.getElementById('feedback');
+  f.style.display='block';
+  f.classList.add(ok?'good':'bad');
+  f.innerHTML=`<div class="feedback-title">${ok?'נכון מאוד!':'לא נכון'}</div><div>${q.explanation}</div>`;
+  nextBtn.disabled=false;
+  scoreText.textContent=`שאלה ${index+1} מתוך ${questions.length} | ציון: ${score}`;
+  progressBar.style.width=`${(index+1)/questions.length*100}%`;
+}
+
+function nextQuestion(){
+  if(!answered)return;
+  index++;
+  index>=questions.length?renderFinish():renderQuestion();
+}
+
+function renderFinish(){
+  const p=Math.round(score/questions.length*100);
+  const msg=p>=90?'מצוין! שליטה חזקה מאוד בחומר.':p>=75?'טוב מאוד! נשארה רק חזרה קצרה.':p>=60?'עבודה טובה, כדאי לחזור על הנושאים שבהם טעית.':'כדאי לעבור שוב על המצגת ולנסות מחדש.';
+  scoreText.textContent='התרגול הסתיים';
+  progressBar.style.width='100%';
+  slide.innerHTML=`
+    <section class="finish">
+      <div class="kicker">סיום התרגול</div>
+      <h1>כל הכבוד!</h1>
+      <div class="big-score">${score}/${questions.length}</div>
+      <p>${msg}</p>
+      <button class="ctrl primary" onclick="startQuiz()">תרגול חדש</button>
+    </section>`;
+}
+
+// Keyboard shortcuts: 1-4 = answer, Enter = next, Backspace = menu
+document.addEventListener("keydown", function(e) {
+  if (e.repeat) return;
+
+  if (e.key === "Backspace") {
+    e.preventDefault();
+    window.location.href = "index.html";
+    return;
+  }
+
+  if (!questions.length) {
+    if (e.key === "Enter") startQuiz();
+    return;
+  }
+
+  if (index >= questions.length) {
+    if (e.key === "Enter") startQuiz();
+    return;
+  }
+
+  if (!answered) {
+    if (e.key === "1") answer(0);
+    else if (e.key === "2") answer(1);
+    else if (e.key === "3") answer(2);
+    else if (e.key === "4") answer(3);
+  } else if (e.key === "Enter") {
+    nextQuestion();
+  }
+});
+
+renderStart();
+</script>
+
+<!-- AADS AD -->
+<div id="ad-container"></div>
+<script src="ad.js"></script>
+
+</body>
+</html>
