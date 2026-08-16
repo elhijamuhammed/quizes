@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>חידון מערכת הציטוכרום P450</title>
+<style>
+:root{--bg:#07111f;--card:#101f34;--text:#f7fbff;--muted:#a8bad0;--blue:#55c7ff;--gold:#ffbd59;--green:#2ecc71;--red:#ff6672;--border:rgba(255,255,255,.12)}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;font-family:Arial,sans-serif;color:var(--text);background:radial-gradient(circle at 10% 10%,rgba(85,199,255,.14),transparent 28%),radial-gradient(circle at 90% 90%,rgba(255,189,89,.10),transparent 28%),var(--bg)}
+.app{max-width:950px;margin:auto;padding:78px 20px 24px}
+.topbar{display:flex;justify-content:space-between;align-items:center;gap:14px;margin-bottom:16px}
+.brand{font-weight:900;font-size:18px}
+.score{color:var(--muted);font-weight:700}
+.progress{height:10px;background:#081522;border-radius:999px;overflow:hidden;margin-bottom:18px}
+.progress>div{height:100%;width:0;background:linear-gradient(90deg,var(--blue),var(--gold));transition:.35s}
+.slide{min-height:620px;background:linear-gradient(145deg,rgba(16,31,52,.98),rgba(11,24,41,.98));border:1px solid var(--border);border-radius:28px;padding:clamp(22px,5vw,46px);display:flex;flex-direction:column;justify-content:center;box-shadow:0 24px 70px rgba(0,0,0,.35)}
+.kicker{color:var(--gold);font-weight:900;margin-bottom:12px}
+h1{font-size:clamp(25px,4vw,40px);line-height:1.45;margin:0 0 25px}
+.start,.finish{text-align:center}
+.start p,.finish p{color:var(--muted);font-size:18px;line-height:1.8}
+.options{display:grid;gap:13px}
+.option{border:1px solid var(--border);background:#0b192b;color:var(--text);padding:16px 18px;border-radius:15px;text-align:right;font-size:17px;line-height:1.55;cursor:pointer;transition:.2s}
+.option:hover:not(:disabled){transform:translateY(-2px);border-color:var(--blue);background:#10223b}
+.option.correct{border-color:var(--green);background:rgba(46,204,113,.17)}
+.option.wrong{border-color:var(--red);background:rgba(255,102,114,.17)}
+.option:disabled{cursor:default}
+.feedback{display:none;margin-top:22px;border-radius:18px;padding:18px 20px;line-height:1.7;background:rgba(255,255,255,.06);border:1px solid var(--border)}
+.feedback.good{border-color:rgba(46,204,113,.55)} .feedback.bad{border-color:rgba(255,102,114,.55)}
+.feedback-title{font-weight:900;font-size:19px;margin-bottom:6px}
+.actions{display:flex;justify-content:space-between;gap:12px;margin-top:22px;flex-wrap:wrap}
+button.ctrl{border:0;border-radius:13px;padding:13px 19px;font-size:16px;font-weight:900;cursor:pointer}
+.primary{background:var(--blue);color:#06111e} .secondary{background:#162a45;color:var(--text);border:1px solid var(--border)!important}
+button.ctrl:disabled{opacity:.45;cursor:not-allowed}
+.big-score{font-size:76px;font-weight:950;color:var(--gold);margin:12px 0}
+.small-note{color:var(--muted);font-size:14px;margin-top:18px}
+.menu-home{position:fixed;top:18px;left:18px;z-index:9999;display:inline-flex;align-items:center;gap:8px;padding:12px 17px;border-radius:13px;background:#162a45;color:var(--text);border:1px solid var(--border);text-decoration:none;font-weight:900;font-size:15px;box-shadow:0 12px 30px rgba(0,0,0,.3)}
+.menu-home:hover{background:#21416b;transform:translateY(-2px)}
+@media(max-width:600px){.app{padding:68px 10px 10px}.slide{min-height:calc(100vh - 115px);border-radius:20px;padding:20px}.option{font-size:16px;padding:14px}.topbar{font-size:14px}.menu-home{top:10px;left:10px;padding:10px 13px;font-size:14px}}
+</style>
+</head>
+<body>
+<a class="menu-home" href="index.html">← חזרה לתפריט</a>
+<div class="app">
+<div class="topbar"><div class="brand">מערכת הציטוכרום P450</div><div class="score" id="scoreText">מוכן להתחלה</div></div>
+<div class="progress"><div id="progressBar"></div></div>
+<main class="slide" id="slide"></main>
+</div>
+<script>
+const originalQuestions=[{"q": "מהו התפקיד המרכזי של מערכת ציטוכרום P450 לפי המצגת?", "options": ["מטבוליזם של תרופות וחומרים זרים", "ייצור אינסולין", "בניית עצם", "סינתזת המוגלובין"], "answer": 0, "explanation": "מערכת CYP450 היא מערכת מרכזית במטבוליזם תרופתי ובאינטראקציות בין תרופות."}, {"q": "היכן מתרחש עיקר המטבוליזם של תרופות במערכת CYP?", "options": ["בכבד", "בטחול", "בעצם", "בעור"], "answer": 0, "explanation": "הכבד הוא האתר המרכזי והעשיר ביותר באנזימי CYP."}, {"q": "מה מאפיין Phase I במטבוליזם?", "options": ["חמצון, חיזור ודה-אלקילציה", "רק גלוקורונידציה", "רק פינוי כלייתי", "יצירת נוגדנים"], "answer": 0, "explanation": "ב-Phase I מתרחשים חמצון, חיזור ודה-אלקילציה."}, {"q": "מה מאפיין Phase II במטבוליזם?", "options": ["תהליכי צימוד להגברת המסיסות", "פירוק חלבונים", "יצירת תאי T", "שגשוג תאי עור"], "answer": 0, "explanation": "Phase II כולל תהליכי צימוד, למשל גלוקורונידציה, שמגבירים מסיסות ומסייעים בפינוי."}, {"q": "מהו First Pass metabolism?", "options": ["מטבוליזם לפני כניסת התרופה למחזור הדם הסיסטמי", "פינוי דרך הריאות", "מטבוליזם רק בכליה", "פיזור התרופה במוח"], "answer": 0, "explanation": "זהו מטבוליזם פרה-סיסטמי בכבד ובמערכת העיכול לפני כניסה למחזור הדם."}, {"q": "אילו שלוש משפחות CYP עיקריות מבצעות מטבוליזם של מרבית התרופות?", "options": ["CYP3A, CYP2C, CYP2D", "CYP1B, CYP4F, CYP7A", "CYP8A, CYP11B, CYP17A", "CYP19A, CYP21A, CYP27B"], "answer": 0, "explanation": "לפי המצגת, המשפחות המרכזיות הן CYP3A, CYP2C ו-CYP2D."}, {"q": "איזה אנזים נחשב מרכזי במיוחד במטבוליזם תרופתי?", "options": ["CYP3A4", "CYP11B1", "CYP19A1", "CYP7A1"], "answer": 0, "explanation": "CYP3A4 הוא אנזים מרכזי במיוחד במטבוליזם תרופתי."}, {"q": "בערך איזה חלק ממטבוליזם התרופות מיוחס ל-CYP3A4 לפי המצגת?", "options": ["כ-50%", "כ-5%", "כ-90%", "כ-1%"], "answer": 0, "explanation": "המצגת מציינת ש-CYP3A4 אחראי לכ-50% ממטבוליזם התרופות."}, {"q": "באיזה איבר קיים הריכוז הגבוה ביותר של אנזימי CYP?", "options": ["כבד", "מוח", "עור", "טחול"], "answer": 0, "explanation": "הכבד מכיל את הריכוז הגבוה ביותר של אנזימי CYP."}, {"q": "איזה אנזים שולט במעי הדק לפי המצגת?", "options": ["CYP3A4", "CYP2D6", "CYP2E1", "CYP1B1"], "answer": 0, "explanation": "במעי הדק CYP3A4 הוא האנזים הדומיננטי."}, {"q": "מהי משמעות Polymorphism במערכת CYP?", "options": ["שונות גנטית המשפיעה על פעילות האנזימים", "זיהום כרוני", "עיכוב זמני בלבד", "מטבוליזם בכליה"], "answer": 0, "explanation": "פולימורפיזם גנטי גורם לשונות בין מטופלים בפעילות האנזימים ובתגובה לתרופות."}, {"q": "איזה CYP מזוהה במיוחד עם פולימורפיזם משמעותי?", "options": ["CYP2D6", "CYP3A4", "CYP2E1", "CYP1A2 בלבד"], "answer": 0, "explanation": "המצגת מדגישה במיוחד את CYP2D6 כפולימורפי."}, {"q": "מה עלולה להיות המשמעות הקלינית של פולימורפיזם?", "options": ["שונות ביעילות או רעילות התרופה", "תמיד חוסר השפעה", "תמיד הרעלה", "אין משמעות קלינית"], "answer": 0, "explanation": "הבדלים גנטיים יכולים לגרום לתגובה שונה לאותה תרופה, כולל תת-טיפול או רעילות."}, {"q": "מהי אינטראקציה בין-תרופתית דרך CYP?", "options": ["תרופה אחת משנה את הפרמקוקינטיקה של אחרת דרך מטבוליזם משותף", "שתי תרופות קשורות כימית", "שתי תרופות פועלות תמיד על אותו רצפטור", "שתי תרופות ניתנות יחד"], "answer": 0, "explanation": "תרופה אחת יכולה להשפיע על אחרת כתוצאה ממטבוליזם משותף דרך CYP."}, {"q": "מהו Inhibition?", "options": ["עיכוב פעילות האנזים והאטת מטבוליזם", "הגברת יצירת האנזים", "הגדלת פינוי כלייתי", "הפעלת P-glycoprotein"], "answer": 0, "explanation": "Inhibition מפחית פעילות CYP ועלול לגרום לעלייה ברמות תרופות שהן substrates."}, {"q": "מהו Induction?", "options": ["הגברת סינתזת/פעילות האנזים והאצת מטבוליזם", "חסימת אתר הפעולה", "הפחתת פינוי", "דיכוי מח עצם"], "answer": 0, "explanation": "Induction מגביר פעילות אנזימטית ולכן מאיץ מטבוליזם."}, {"q": "איזה תהליך מתחיל בדרך כלל מהר יותר?", "options": ["Inhibition", "Induction", "שניהם תמיד באותו קצב", "אין הבדל"], "answer": 0, "explanation": "עיכוב מתחיל בדרך כלל מהר יותר, בעוד induction דורש זמן ליצירת אנזימים."}, {"q": "כמה זמן עשוי לקחת ל-Induction להתחיל לפי המצגת?", "options": ["כ-1–2 שבועות", "מספר דקות", "מספר שעות בלבד", "כחודש תמיד"], "answer": 0, "explanation": "המצגת מציינת התחלה איטית יחסית של induction, בערך 1–2 שבועות."}, {"q": "מהו Auto-induction?", "options": ["תרופה מזרזת את האנזים שמפרק אותה עצמה", "תרופה מעכבת את עצמה", "תרופה מופרשת ללא מטבוליזם", "תרופה מפעילה PGP בלבד"], "answer": 0, "explanation": "Auto-induction הוא מצב שבו תרופה משרה את האנזים שממטבולז אותה וכך מגבירה את הפינוי שלה."}, {"q": "איזה מהבאים הוא Inhibitor של CYP3A4?", "options": ["Clarithromycin", "Carbamazepine", "Rifampin", "Phenytoin"], "answer": 0, "explanation": "Clarithromycin מופיע ברשימת המעכבים של CYP3A4."}, {"q": "איזה מהבאים הוא Inducer של CYP3A4?", "options": ["Carbamazepine", "Fluconazole", "Ritonavir", "Cimetidine"], "answer": 0, "explanation": "Carbamazepine מופיע בין ה-Inducers של CYP3A4."}, {"q": "מה הקשר של Grapefruit juice ל-CYP3A4?", "options": ["מעכב CYP3A4", "מזרז CYP3A4", "אינו משפיע כלל", "מפעיל CYP2D6"], "answer": 0, "explanation": "אשכוליות ומיץ אשכוליות מופיעים במצגת כמעכבי CYP3A4."}, {"q": "איזו קבוצת תרופות מופיעה כ-Substrates של CYP3A4?", "options": ["Statins כמו Atorvastatin, Lovastatin, Simvastatin", "Penicillins", "Bisphosphonates", "Insulin"], "answer": 0, "explanation": "בין ה-substrates של CYP3A4 מופיעים Atorvastatin, Lovastatin ו-Simvastatin."}, {"q": "איזה אנטיביוטיקה מודגשת כלא שייכת באותה צורה ל-macrolides של CYP3A4?", "options": ["Azithromycin", "Clarithromycin", "Erythromycin", "Ritonavir"], "answer": 0, "explanation": "במצגת יש הדגשה קלינית: Azithromycin לא נכלל כמו Clarithromycin ו-Erythromycin."}, {"q": "איזה מהבאים הוא Inhibitor של CYP2D6?", "options": ["Fluoxetine", "Dexamethasone", "Rifampin", "Phenobarbital"], "answer": 0, "explanation": "Fluoxetine מופיע בין המעכבים של CYP2D6."}, {"q": "איזה מהבאים הוא Inducer של CYP2D6 לפי המצגת?", "options": ["Dexamethasone", "Paroxetine", "Quinidine", "Haloperidol"], "answer": 0, "explanation": "Dexamethasone מופיע יחד עם Rifampin כ-Inducer של CYP2D6."}, {"q": "איזו קבוצת תרופות מופיעה כ-Substrates של CYP2D6?", "options": ["Beta blockers", "Proton pump inhibitors", "NSAIDs בלבד", "Statins בלבד"], "answer": 0, "explanation": "Beta blockers כמו Bisoprolol, Metoprolol, Propranolol ו-Timolol מופיעים כ-substrates של CYP2D6."}, {"q": "איזו תרופת כאב מופיעה כ-Substrate של CYP2D6?", "options": ["Codeine", "Ibuprofen בלבד", "Aspirin", "Celecoxib"], "answer": 0, "explanation": "Codeine מופיע בין תרופות הכאב שעוברות מטבוליזם דרך CYP2D6."}, {"q": "איזה אנזים מטבולז S-warfarin לפי המצגת?", "options": ["CYP2C9", "CYP2C19", "CYP3A4", "CYP2E1"], "answer": 0, "explanation": "S-warfarin מופיע כ-substrate של CYP2C9."}, {"q": "איזה אנזים מטבולז Omeprazole לפי המצגת?", "options": ["CYP2C19", "CYP2D6", "CYP2E1", "CYP2B6"], "answer": 0, "explanation": "Omeprazole מופיע כ-substrate של CYP2C19."}, {"q": "איזה מהבאים הוא Inhibitor של CYP2C9?", "options": ["Fluconazole", "Rifampin", "Prednisone", "Phenobarbital"], "answer": 0, "explanation": "Fluconazole מופיע בין המעכבים של CYP2C9."}, {"q": "איזה מהבאים הוא Inducer של CYP2C19?", "options": ["Rifampin", "Fluvoxamine", "Ketoconazole", "Omeprazole"], "answer": 0, "explanation": "Rifampin מופיע כ-Inducer של CYP2C19."}, {"q": "איזה חומר הוא Substrate של CYP1A2?", "options": ["Caffeine", "Codeine", "Digoxin", "Cyclosporine"], "answer": 0, "explanation": "Caffeine מופיע ברשימת ה-substrates של CYP1A2."}, {"q": "מהו Inducer חשוב של CYP1A2 לפי המצגת?", "options": ["עישון", "Fluvoxamine", "Ciprofloxacin", "Amiodarone"], "answer": 0, "explanation": "עישון מופיע בין הגורמים שמשרים CYP1A2."}, {"q": "איזה מהבאים הוא Inhibitor של CYP1A2?", "options": ["Ciprofloxacin", "עישון", "Broccoli", "Omeprazole"], "answer": 0, "explanation": "Ciprofloxacin מופיע בין המעכבים של CYP1A2."}, {"q": "מהו התפקיד העיקרי של P-glycoprotein לפי ההערה במצגת?", "options": ["טרנספורט ופינוי חומרים דרך ממברנות", "מטבוליזם חמצוני קלאסי בלבד", "ייצור חלבונים", "סינתזת כולסטרול"], "answer": 0, "explanation": "המצגת מדגישה ש-PGP מתמקד בעיקר בטרנספורט, עם חפיפה קלינית משמעותית למערכת CYP."}, {"q": "איזה חומר מופיע כ-Substrate של P-glycoprotein?", "options": ["Cyclosporine", "Paracetamol", "Metformin", "Insulin"], "answer": 0, "explanation": "Cyclosporine מופיע ברשימת ה-substrates של PGP."}, {"q": "איזה אנזים קשור במיוחד למטבוליזם של אלכוהול לפי המצגת?", "options": ["CYP2E1", "CYP2D6", "CYP2C19", "CYP3A5"], "answer": 0, "explanation": "CYP2E1 מודגש במצגת בהקשר של אלכוהול."}, {"q": "איזה חומר הוא Substrate של CYP2E1?", "options": ["Acetaminophen", "Metoprolol", "Omeprazole", "R-warfarin"], "answer": 0, "explanation": "Acetaminophen מופיע כ-substrate של CYP2E1."}, {"q": "מהי התוצאה הקלינית הנטו לפי השקופית המסכמת?", "options": ["שילוב של מיקום, גנטיקה ותחרות/עיכוב/זירוז", "רק מינון התרופה", "רק גיל המטופל", "רק משקל המטופל"], "answer": 0, "explanation": "השקופית המסכמת מציגה שלושה גורמים: מיקום, גנטיקה ותחרות דרך induction/inhibition."}];
+const QUESTIONS_PER_ROUND=20;
+let questions=[],index=0,score=0,answered=false;
+
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}}
+
+function startQuiz(){
+  questions=JSON.parse(JSON.stringify(originalQuestions));
+  shuffle(questions);
+  questions=questions.slice(0,Math.min(QUESTIONS_PER_ROUND,questions.length));
+  questions.forEach(q=>{const correct=q.options[q.answer];shuffle(q.options);q.answer=q.options.indexOf(correct)});
+  index=0;score=0;answered=false;renderQuestion();
+}
+
+function renderStart(){
+  progressBar.style.width='0%';
+  scoreText.textContent='מוכן להתחלה';
+  slide.innerHTML=`<section class="start"><div class="kicker">תרגול אינטראקטיבי</div><h1>מערכת הציטוכרום P450</h1><p>20 שאלות אקראיות בכל סבב, עם משוב והסבר לאחר כל תשובה.</p><button class="ctrl primary" onclick="startQuiz()">התחלת התרגול</button><div class="small-note">${originalQuestions.length} שאלות במאגר • 20 בכל סבב • מבוסס רק על המצגת</div></section>`;
+}
+
+function renderQuestion(){
+  answered=false;
+  const q=questions[index],L=['א','ב','ג','ד'];
+  scoreText.textContent=`שאלה ${index+1} מתוך ${questions.length} | ציון: ${score}`;
+  progressBar.style.width=`${index/questions.length*100}%`;
+  slide.innerHTML=`<div class="kicker">שאלה ${index+1} מתוך ${questions.length}</div><h1>${q.q}</h1><div class="options">${q.options.map((o,i)=>`<button class="option" onclick="answer(${i})">${L[i]}. ${o}</button>`).join('')}</div><div class="feedback" id="feedback"></div><div class="actions"><button class="ctrl secondary" onclick="renderStart()">התחלה מחדש</button><button class="ctrl primary" id="nextBtn" onclick="nextQuestion()" disabled>לשאלה הבאה</button></div>`;
+}
+
+function answer(choice){
+  if(answered)return;
+  answered=true;
+  const q=questions[index],buttons=[...document.querySelectorAll('.option')];
+  buttons.forEach((b,i)=>{b.disabled=true;if(i===q.answer)b.classList.add('correct')});
+  const ok=choice===q.answer;
+  if(ok)score++; else buttons[choice].classList.add('wrong');
+  const f=document.getElementById('feedback');
+  f.style.display='block';f.classList.add(ok?'good':'bad');
+  f.innerHTML=`<div class="feedback-title">${ok?'נכון מאוד!':'לא נכון'}</div><div>${q.explanation}</div>`;
+  nextBtn.disabled=false;
+  scoreText.textContent=`שאלה ${index+1} מתוך ${questions.length} | ציון: ${score}`;
+  progressBar.style.width=`${(index+1)/questions.length*100}%`;
+}
+
+function nextQuestion(){if(!answered)return;index++;index>=questions.length?renderFinish():renderQuestion()}
+
+function renderFinish(){
+  const p=Math.round(score/questions.length*100);
+  const msg=p>=90?'מצוין! שליטה חזקה מאוד בחומר.':p>=75?'טוב מאוד! נשארה רק חזרה קצרה.':p>=60?'עבודה טובה, כדאי לחזור על הנושאים שבהם טעית.':'כדאי לעבור שוב על המצגת ולנסות מחדש.';
+  scoreText.textContent='התרגול הסתיים';progressBar.style.width='100%';
+  slide.innerHTML=`<section class="finish"><div class="kicker">סיום התרגול</div><h1>כל הכבוד!</h1><div class="big-score">${score}/${questions.length}</div><p>${msg}</p><button class="ctrl primary" onclick="startQuiz()">תרגול חדש</button></section>`;
+}
+
+document.addEventListener("keydown", function(e) {
+  if (e.repeat) return;
+
+  // Backspace = الرجوع للصفحة الرئيسية
+  if (e.key === "Backspace") {
+    e.preventDefault();
+    window.location.href = "index.html";
+    return;
+  }
+
+  // إذا انتهى الامتحان → Enter يبدأ امتحان جديد
+  if (index >= questions.length) {
+    if (e.key === "Enter") {
+      startQuiz();
+    }
+    return;
+  }
+
+  // أثناء السؤال → 1-4 لاختيار الإجابة
+  if (!answered) {
+    if (e.key === "1") answer(0);
+    else if (e.key === "2") answer(1);
+    else if (e.key === "3") answer(2);
+    else if (e.key === "4") answer(3);
+  }
+
+  // بعد الإجابة → Enter للسؤال التالي
+  else if (e.key === "Enter") {
+    nextQuestion();
+  }
+});
+
+
+renderStart();
+</script>
+<!-- AADS AD -->
+<div id="ad-container"></div>
+
+<script src="ad.js"></script>
+</body>
+</html>
