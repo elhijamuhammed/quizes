@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>חידון תרגול לבחינה</title>
+<style>
+  :root{
+    --paper:#f6f4ee;
+    --ink:#20261f;
+    --ink-soft:#5c6459;
+    --line:#d8d3c4;
+    --accent:#2e5c4d;
+    --accent-soft:#e4ede8;
+    --good:#2e5c4d;
+    --good-soft:#e4ede8;
+    --bad:#a83d2d;
+    --bad-soft:#f6e2dd;
+    --flag:#a85b2d;
+    --card:#ffffff;
+    --serif: "Frank Ruhl Libre", "David Libre", Georgia, serif;
+    --sans: "Assistant", "Segoe UI", Arial, sans-serif;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:var(--sans);
+    line-height:1.55;
+    min-height:100vh;
+  }
+  .wrap{
+    max-width:640px;
+    margin:0 auto;
+    padding:32px 20px 60px;
+  }
+
+  /* ---- setup screen ---- */
+  .eyebrow{
+    font-size:13px;
+    letter-spacing:.12em;
+    color:var(--accent);
+    font-weight:700;
+    margin-bottom:8px;
+  }
+  h1{
+    font-family:var(--serif);
+    font-size:clamp(28px,6vw,38px);
+    margin:0 0 10px;
+    font-weight:700;
+  }
+  .lead{
+    color:var(--ink-soft);
+    font-size:15.5px;
+    max-width:52ch;
+    margin:0 0 28px;
+  }
+  .setup-card{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:24px;
+  }
+  .setup-card label{
+    display:block;
+    font-size:13px;
+    font-weight:700;
+    color:var(--ink-soft);
+    margin:18px 0 8px;
+  }
+  .setup-card label:first-of-type{margin-top:0;}
+  select, .num-input{
+    width:100%;
+    padding:11px 14px;
+    border:1px solid var(--line);
+    border-radius:8px;
+    background:var(--paper);
+    font-family:var(--sans);
+    font-size:15px;
+    color:var(--ink);
+  }
+  .chip-row{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+  }
+  .chip{
+    padding:8px 16px;
+    border-radius:20px;
+    border:1px solid var(--line);
+    background:var(--paper);
+    font-size:14px;
+    cursor:pointer;
+    color:var(--ink-soft);
+    font-weight:600;
+  }
+  .chip.active{
+    background:var(--accent);
+    border-color:var(--accent);
+    color:#fff;
+  }
+  .start-btn{
+    width:100%;
+    margin-top:26px;
+    padding:15px;
+    border:none;
+    border-radius:10px;
+    background:var(--accent);
+    color:#fff;
+    font-family:var(--sans);
+    font-size:16px;
+    font-weight:700;
+    cursor:pointer;
+  }
+  .start-btn:hover{background:#254c40;}
+  .setup-note{
+    font-size:13px;
+    color:var(--ink-soft);
+    margin-top:14px;
+  }
+
+  /* ---- quiz screen ---- */
+  #quiz-screen{display:none;}
+  .quiz-top{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:10px;
+    font-size:13px;
+    color:var(--ink-soft);
+    font-weight:600;
+  }
+  .progress-bar{
+    height:6px;
+    background:var(--line);
+    border-radius:6px;
+    overflow:hidden;
+    margin-bottom:26px;
+  }
+  .progress-fill{
+    height:100%;
+    background:var(--accent);
+    width:0%;
+    transition:width .3s ease;
+  }
+  .q-card{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:26px 24px;
+  }
+  .q-topic{
+    font-size:12px;
+    font-weight:700;
+    color:var(--accent);
+    letter-spacing:.04em;
+    margin-bottom:10px;
+  }
+  .q-text{
+    font-family:var(--serif);
+    font-size:19px;
+    font-weight:700;
+    margin:0 0 20px;
+    line-height:1.4;
+  }
+  .choices{
+    display:grid;
+    gap:10px;
+  }
+  .choice-btn{
+    text-align:right;
+    padding:13px 16px;
+    border:1.5px solid var(--line);
+    border-radius:10px;
+    background:var(--paper);
+    font-family:var(--sans);
+    font-size:15px;
+    color:var(--ink);
+    cursor:pointer;
+    display:flex;
+    gap:10px;
+  }
+  .choice-btn:hover:not(:disabled){border-color:var(--accent);}
+  .choice-btn .letter{font-weight:700; color:var(--accent);}
+  .choice-btn:disabled{cursor:default;}
+  .choice-btn.chosen-correct{
+    background:var(--good-soft);
+    border-color:var(--good);
+    color:var(--good);
+    font-weight:700;
+  }
+  .choice-btn.chosen-wrong{
+    background:var(--bad-soft);
+    border-color:var(--bad);
+    color:var(--bad);
+    font-weight:700;
+  }
+  .choice-btn.reveal-correct{
+    background:var(--good-soft);
+    border-color:var(--good);
+  }
+  .flag-note{
+    margin-top:16px;
+    background:#f4e6da;
+    border-inline-start:3px solid var(--flag);
+    padding:9px 13px;
+    font-size:13px;
+    color:#6b3a1c;
+    border-radius:4px;
+  }
+  .feedback-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-top:20px;
+  }
+  .feedback-text{
+    font-size:14px;
+    font-weight:700;
+  }
+  .feedback-text.good{color:var(--good);}
+  .feedback-text.bad{color:var(--bad);}
+  .next-btn{
+    padding:11px 22px;
+    border:none;
+    border-radius:8px;
+    background:var(--accent);
+    color:#fff;
+    font-family:var(--sans);
+    font-size:14.5px;
+    font-weight:700;
+    cursor:pointer;
+    display:none;
+  }
+  .next-btn.show{display:inline-block;}
+
+  /* ---- results screen ---- */
+  #results-screen{display:none;}
+  .score-card{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:36px 28px;
+    text-align:center;
+  }
+  .score-big{
+    font-family:var(--serif);
+    font-size:56px;
+    font-weight:700;
+    color:var(--accent);
+    margin:6px 0;
+  }
+  .score-sub{
+    color:var(--ink-soft);
+    font-size:15px;
+    margin-bottom:24px;
+  }
+  .restart-btn{
+    padding:13px 26px;
+    border:1px solid var(--accent);
+    border-radius:8px;
+    background:var(--accent);
+    color:#fff;
+    font-family:var(--sans);
+    font-size:15px;
+    font-weight:700;
+    cursor:pointer;
+    margin:6px;
+  }
+  .restart-btn.secondary{
+    background:var(--card);
+    color:var(--accent);
+  }
+  .review-list{
+    margin-top:28px;
+    text-align:right;
+  }
+  .review-item{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-inline-start:4px solid var(--bad);
+    border-radius:8px;
+    padding:14px 16px;
+    margin-bottom:10px;
+    font-size:14px;
+  }
+  .review-item .rq{font-weight:700; margin-bottom:6px;}
+  .review-item .ra{color:var(--bad);}
+  .review-item .rc{color:var(--good); margin-top:3px;}
+  .review-heading{
+    font-family:var(--serif);
+    font-size:20px;
+    margin:36px 0 14px;
+  }
+
+  @media (max-width:480px){
+    .wrap{padding:22px 14px 50px;}
+    .q-card{padding:20px 18px;}
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <!-- SETUP -->
+  <div id="setup-screen">
+    <div class="eyebrow">חידון תרגול</div>
+    <h1>מוכנים לבדוק את עצמכם?</h1>
+    <p class="lead">93 שאלות אמריקאיות מהבחינה ומהתמונות, מסודרות לפי נושא. בחרו נושא, מספר שאלות וסדר, ותתחילו.</p>
+
+    <div class="setup-card">
+      <label>נושא</label>
+      <select id="topic-select"></select>
+
+      <label>כמות שאלות</label>
+      <div class="chip-row" id="count-chips">
+        <div class="chip" data-count="10">10</div>
+        <div class="chip" data-count="20">20</div>
+        <div class="chip active" data-count="all">הכל</div>
+      </div>
+
+      <label>סדר שאלות</label>
+      <div class="chip-row" id="order-chips">
+        <div class="chip active" data-order="sequential">לפי סדר</div>
+        <div class="chip" data-order="shuffle">אקראי</div>
+      </div>
+
+      <button class="start-btn" id="start-btn">התחל חידון</button>
+      <div class="setup-note" id="count-note"></div>
+    </div>
+  </div>
+
+  <!-- QUIZ -->
+  <div id="quiz-screen">
+    <div class="quiz-top">
+      <span id="progress-label">שאלה 1 מתוך 10</span>
+      <span id="score-label">ניקוד: 0</span>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+
+    <div class="q-card">
+      <div class="q-topic" id="q-topic"></div>
+      <div class="q-text" id="q-text"></div>
+      <div class="choices" id="choices"></div>
+      <div class="flag-note" id="flag-note" style="display:none;"></div>
+      <div class="feedback-row">
+        <span class="feedback-text" id="feedback-text"></span>
+        <button class="next-btn" id="next-btn">השאלה הבאה →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- RESULTS -->
+  <div id="results-screen">
+    <div class="score-card">
+      <div class="eyebrow">סיימתם!</div>
+      <div class="score-big" id="final-score">0/0</div>
+      <div class="score-sub" id="final-pct">0% תשובות נכונות</div>
+      <button class="restart-btn" id="retry-btn">נסו שוב</button>
+      <button class="restart-btn secondary" id="new-quiz-btn">חידון חדש</button>
+    </div>
+    <div id="review-wrap"></div>
+  </div>
+
+</div>
+
+<script>
+const DATA = [
+{ section: "פרמקוקינטיקה ואינטראקציות תרופתיות", questions: [
+  {n:1, q:"היכן מתרחש בעיקר תהליך הספיגה של תרופות שניתנו דרך מערכת העיכול?", opts:["בכבד","במעי","בשומן","תרופות לא נספגות דרך מערכת העיכול","בכלי הדם"], correct:1},
+  {n:2, q:"מה הם היתרונות של שחרור מושהה?", opts:["רמות התרופה בדם נשארות יציבות יותר","מפחית את הסיכוי לסבול מתופעות לוואי","מגדיל את היענות המטופל לטיפול","יש סוגים שונים של שחרור מושהה","כל התשובות נכונות"], correct:4},
+  {n:3, q:"התהליכים העיקריים בפרמקוקינטיקה הם:", opts:["התמוססות, התפזרות, פינוי ומטבוליזם","ספיגה, התפזרות, מטבוליזם ופינוי","ספיגה, אגירה, מטבוליזם ופינוי","ספיגה, התפזרות, פעילות פרמקולוגית ופינוי","ספיגה, הפעלה, התפזרות ומטבוליזם"], correct:1},
+  {n:4, q:"מתי נעדיף לעכב את שחרור התרופה?", opts:["כשהמטופל מבקש","כשהתרופה לא טעימה","כשהתרופה עלולה להתפרק בקיבה","כשהתרופה ניתנת בזריקה","כשהתרופה ממילא לא מתפנה מהגוף"], correct:2},
+  {n:5, q:"מה מהמשפטים הבאים נכון?", opts:["במתן פראנטרלי התרופה ניתנת דרך מערכת העיכול","במתן מקומי הספיגה הסיסטמית מזערית","בהזרקה לוריד השפעת התרופה איטית","שאיפה היא צורת מתן סיסטמית","לתרופות הניתנות במתן מקומי תופעות לוואי רבות"], correct:1},
+  {n:6, q:"זמן מחצית החיים הוא:", opts:["הזמן שבו לוקחים עוד מנה של תרופה","הזמן שבו מקטינים חצי מנת תרופה","משך הזמן בו ריכוז התרופה נמצא בתחום הטיפולי","משך הזמן שלוקח לריכוז התרופה בדם לרדת ב-50%","הזמן בו נמדד ריכוז רעיל בדם"], correct:3},
+  {n:7, q:"אם מחצית החיים של תרופה היא 24 שעות, כמה זמן לאחר סיום הטיפול ניתן להניח שהיא התפנתה מהגוף?", opts:["12 שעות","24 שעות","שעתיים","4 ימים","שבוע"], correct:3},
+  {n:8, q:"מה לא נכון לגבי אינטראקציות על רקע מטבוליזם?", opts:["הן תמיד בלתי הפיכות","לעיכוב אנזימי כבד השפעה מיידית בעוד אינדוקציה לוקחת מספר ימים","לרוב מתרחשת בכבד","משמעותיות רק כשלוקחים 5 תרופות או יותר","המדד הפרמקוקינטי שמושפע הוא זמן מחצית החיים"], correct:0},
+  {n:9, q:"כיצד מיץ אשכוליות משפיע על תרופות?", opts:["מונע את ספיגתן","משנה את רמת החומציות שמרכיבי המיץ קושרים את התרופה","משנה את הספיגה ולכן זה שילוב מומלץ","מעכב את האנזים CYP3A4 בדופן המעי מה שמעלה את כמות התרופה שנספגת","מחמיר תופעות לוואי במערכת העיכול"], correct:3},
+  {n:10, q:"שינוי רמת החומציות של השתן ע\"י תוספים או מיץ חמוציות יכול לפגוע בתהליך:", opts:["ספיגה","התפזרות","התמוססות התרופה","פינוי","מטבוליזם"], correct:3},
+  {n:11, q:"לא מומלץ לצרוך אלכוהול עם כדורי שינה או תרופות נגד דיכאון עקב חשש לאינטראקציה על רקע:", opts:["עליה בפינוי התרופות","ירידה בספיגת התרופות","זה דווקא כן מומלץ, כי מגביר את האפקט (סינרגיזם)","הגברת המטבוליזם של התרופות","הגברת ההשפעה של דיכוי מערכת העצבים"], correct:4},
+]},
+{ section: "כימיה בסיסית", questions: [
+  {n:12, q:"מהו התחום המדעי העוסק בחקר מבניהם של החומרים השונים ויסודותיהם, ובקביעת החוקים שלפיהם הם מתחברים לחומרים חדשים?", opts:["תורת המבנה המרחבי","עקרונות יסוד בכימיה","מדעי האטום","כימיה"], correct:3},
+  {n:13, q:"מהו החומר הפעיל העיקרי באקונומיקה?", opts:["חומצה קרבוקסילית HCl","חומצה הידרוכלורית NaOCl","נתרן תת כלורי","גז כלור רעיל"], correct:2},
+  {n:14, q:"איזו תכונה נחשבת לתכונה פיזיקלית?", opts:["דליקה","חמצון","ציפוף","השחרה של פירות"], correct:2},
+]},
+{ section: "לחץ דם ומערכת הלב וכלי הדם", questions: [
+  {n:15, q:"מהו לחץ דם סיסטולי?", opts:["הלחץ בזמן הרפיית הלב","הלחץ הגבוה בזמן התכווצות הלב","ממוצע לחצי הדם","לחץ בכלי הדם הקטנים בלבד"], correct:1},
+  {n:16, q:"מדוע יתר לחץ דם מכונה \"הרוצח השקט\"?", opts:["גורם לכאב חריף","מופיע רק בגיל צעיר","לרוב ללא תסמינים אך גורם לנזק חמור","נעלם ללא טיפול"], correct:2},
+  {n:17, q:"איזה מכשיר מומלץ למדידת לחץ דם ביתית?", opts:["שעון חכם","מכשיר זרוע מאומת","מדידה באצבע","מדידת דופק בלבד"], correct:1},
+  {n:35, q:"דיאסטולה היא:", opts:["כיווץ","הרפיה","דופק","קרישה"], correct:1},
+  {n:36, q:"החדר השמאלי מזרים דם ל:", opts:["ריאות","כבד","כל הגוף","ורידים"], correct:2},
+  {n:37, q:"החדר השמאלי מזרים דם ל:", opts:["ריאות","כבד","כל הגוף","ורידים"], correct:2, flag:"כפילות של שאלה 36 בחומר המקורי"},
+  {n:38, q:"תאי דם אדומים אחראים ל:", opts:["קרישה","חיסון","הובלת חמצן","עיכול"], correct:2},
+  {n:39, q:"פיברין הוא:", opts:["הורמון","אנזים","חלבון קרישה","שומן"], correct:2},
+  {n:40, q:"מחלות קרדיווסקולריות הן:", opts:["מחלות עצב","מחלות נשימה","מחלות לב וכלי דם","מחלות עיכול"], correct:2},
+  {n:62, q:"מהו הרובד הטרשתי?", opts:["קריש דם זמני","הצטברות שומן בדופן העורק","התכווצות שריר","בצקת"], correct:1},
+  {n:66, q:"לחץ דם 120/80 - הערך העליון הוא:", opts:["דיאסטולי","ממוצע","סיסטולי","ורידי"], correct:2},
+]},
+{ section: "מתן תרופות ומשאפים", questions: [
+  {n:18, q:"יתרון מרכזי של מתן תרופות בשאיפה הוא:", opts:["פעולה איטית","ספיגה מערכתית גבוהה","הגעה ישירה לאתר הפעולה","מינון גבוה יותר"], correct:2},
+  {n:19, q:"מה יש לבצע לפני שימוש ראשון במשאף מדוד?", opts:["שטיפה במים","פריימינג","קירור","פירוק המשאף"], correct:1},
+  {n:20, q:"החלפת סוג משאף ללא הדרכה:", opts:["מומלצת","לא משפיעה","אינה מומלצת","חובה"], correct:2},
+]},
+{ section: "תזונת תינוקות", questions: [
+  {n:21, q:"המלצת משרד הבריאות לגבי הנקה היא:", opts:["עד גיל 3 חודשים","לפחות חצי שנה","רק חודש","ללא הגבלה"], correct:1},
+  {n:22, q:"תמ\"ל סטנדרטי מבוסס לרוב על:", opts:["סויה בלבד","חלב אם","חלב פרה מועשר בברזל","חלב עיזים"], correct:2},
+  {n:23, q:"תמ\"ל AR מיועד בעיקר ל:", opts:["אלרגיה","רפלוקס","פגים","חוסר ברזל"], correct:1},
+]},
+{ section: "טיפול בפצעים והומאופתיה", questions: [
+  {n:25, q:"מיתוס נפוץ בטיפול בפצעים הוא:", opts:["מריחה ללא שטיפה","פצע צריך אוויר כדי להחלים","יש לנקות פצע","יש למנוע זיהום"], correct:1},
+  {n:26, q:"פצע אקוטי מאופיין ב:", opts:["ריפוי איטי מאוד","דלקת ממושכת","ריפוי צפוי ומהיר","היעדר זיהום"], correct:2},
+  {n:27, q:"חוק הדומים קובע כי:", opts:["ההפך מרפא","הדומה מרפא את הדומה","מינון גבוה מרפא","אין קשר לסימפטומים"], correct:1},
+  {n:28, q:"לפי ההומאופתיה, מחלה נגרמת מ:", opts:["חיידק בלבד","חוסר איזון בתהודה","גיל","תזונה"], correct:1},
+  {n:29, q:"מה נכון לגבי וירוסים?", opts:["יצורים חיים עצמאיים","תאים חסרי גרעין","טפילים תאיים מוחלטים","חיידקים מוקטנים"], correct:2, flag:"נוסח חלקי בלבד בחומר המקורי"},
+]},
+{ section: "ביולוגיה של התא ומערכת העצבים", questions: [
+  {n:30, q:"איזו רקמה אחראית על העברת אותות חשמליים?", opts:["שריר","חיבור","אפיתל","עצב"], correct:3},
+  {n:31, q:"הומאוסטזיס הוא:", opts:["יצירת אנרגיה","שמירה על יציבות פנימית","תהליך עיכול","התרבות תאים"], correct:1},
+  {n:32, q:"מהו תפקיד האסטרוציטים?", opts:["יצירת דחף עצבי","הגנה חיסונית","תמיכה והזנה של תאי עצב","כיווץ שרירים"], correct:2},
+  {n:33, q:"מיקרוגליה שייכת ל:", opts:["מערכת השרירים","מערכת החיסון של המוח","מערכת הדם","מערכת ההפרשה"], correct:1},
+  {n:34, q:"מה משותף לכל התאים החיים?", opts:["גרעין","דופן תא","ממברנה","מיטוכונדריה"], correct:2},
+  {n:55, q:"תפקיד אנזים:", opts:["להאט תגובה","לזרז תגובה","לייצר חום","לפרק תאים"], correct:1},
+  {n:56, q:"ATP משמש ל:", opts:["מבנה התא","אגירת אנרגיה","יצירת חלבון","קרישה"], correct:1},
+]},
+{ section: "מערכת הנשימה", questions: [
+  {n:41, q:"דרכי האוויר העליונות כוללות:", opts:["נאדיות","סימפונות","אף ולוע","ריאות"], correct:2},
+  {n:42, q:"תפקיד הטרכאה בשאיפה:", opts:["הרפיה","כיווץ","קרישה","סינון"], correct:3},
+  {n:43, q:"בשאיפה בית החזה:", opts:["קטן","גדל","קבוע","מתכווץ"], correct:1},
+  {n:44, q:"חילוף הגזים מתרחש ב:", opts:["קנה הנשימה","סימפונות","נאדיות","אף"], correct:2},
+  {n:45, q:"נשימה דרך האף מאפשרת:", opts:["ייבוש האוויר","חימום וסינון","האצת זרימה","הפחתת חמצן"], correct:1},
+  {n:46, q:"COPD היא:", opts:["מחלה זיהומית","מחלה חסימתית כרונית","מחלת לב","מחלת שריר"], correct:1},
+  {n:47, q:"אסתמה היא:", opts:["מחלה נוירולוגית","דלקת דרכי הנשימה","מחלת דם","מחלת עיכול"], correct:1},
+  {n:48, q:"פחמן דו-חמצני נפלט ב:", opts:["שאיפה","נשיפה","דופק","קרישה"], correct:1},
+]},
+{ section: "מערכת העיכול", questions: [
+  {n:49, q:"פירוק ראשוני של מזון מתרחש ב:", opts:["קיבה","מעי דק","פה","וושט"], correct:2},
+  {n:50, q:"פפסין הוא:", opts:["הורמון","שומן","אנזים","ויטמין"], correct:2},
+  {n:51, q:"הלבלב מפריש:", opts:["מרה","אנזימי עיכול","רוק","חומצה"], correct:1},
+  {n:52, q:"המעי הגס אחראי ל:", opts:["ספיגת מים","פירוק חלבונים","עיכול שומנים","ספיגת חמצן"], correct:0},
+  {n:53, q:"רפלוקס נגרם עקב:", opts:["כשל קיבה","כשל הסוגר","חוסר אנזימים","חוסר חמצן"], correct:1},
+  {n:54, q:"התריסריון הוא חלק מ:", opts:["קיבה","מעי גס","מעי דק","וושט"], correct:2},
+]},
+{ section: "פרקינסון", questions: [
+  {n:57, q:"מהו המאפיין העיקרי של מחלת פרקינסון?", opts:["דלקת חריפה במוח","ניוון תאי עצב במערכת העצבים המרכזית","פגיעה בשרירי השלד בלבד","מחלה אוטואימונית"], correct:1},
+  {n:58, q:"ברדיקינזיה מתארת:", opts:["רעד חזק","איטיות תנועה","אובדן שיווי משקל","כאב עצבי"], correct:1},
+  {n:59, q:"איזה נוירוטרנסמיטר נפגע בפרקינסון?", opts:["סרוטונין","אצטילכולין","דופמין","GABA"], correct:2},
+  {n:60, q:"איזה מהבאים הוא סימפטום לא מוטורי?", opts:["רעד","נוקשות","עצירות","איטיות תנועה"], correct:2},
+  {n:61, q:"מה מטרת הטיפול התרופתי בפרקינסון?", opts:["ריפוי המחלה","עצירת הניוון","שיפור תפקוד והפחתת תסמינים","מניעת הופעת המחלה"], correct:2},
+]},
+{ section: "דיכאון", questions: [
+  {n:67, q:"דיכאון הוא הפרעה:", opts:["נוירולוגית","פסיכוטית","במצב הרוח","מוטורית"], correct:2},
+  {n:68, q:"נוירוטרנסמיטרים מרכזיים בדיכאון:", opts:["דופמין בלבד","סרוטונין ונוראדרנלין","GABA","אצטילכולין"], correct:1},
+]},
+{ section: "חישובים ומינונים", questions: [
+  {n:63, q:"כפית אחת שווה ל:", opts:["10 מ\"ל","15 מ\"ל","5 מ\"ל","20 מ\"ל"], correct:2},
+  {n:64, q:"המרה מגרמים למ\"ג מתבצעת ע\"י:", opts:["חילוק ב-100","חילוק ב-1000","כפל ב-1000","כפל ב-100"], correct:2},
+  {n:65, q:"20 טיפות:", opts:["0.5 מ\"ל","1 מ\"ל","2 מ\"ל","5 מ\"ל"], correct:1},
+]},
+{ section: "רגולציה, חקיקה ואתיקה מקצועית", questions: [
+  {n:69, q:"ביקורת של משרד הבריאות בבית המרקחת בו אתם עובדים תבוצע על ידי:", opts:["מנהלת אגף הרוקחות","עובדי האגף לרישוי מקצועות רפואיים","עובדי המכון לביקורת ותקנים של חומרי רפואה","עובדי מחלקת הרוקחות המחוזית"], correct:3},
+  {n:70, q:"מה נכון ביחס לחלוקה לקטגוריות רגולטוריות של תרופות:", opts:["ניתן לפתח תכשיר ביוסימילארי לתכשיר גנרי","מכל תרופת מקור ניתן לפתח לאחר תפוגת הפטנט תכשיר גנרי ותכשיר ביוסימילארי","יש לבצע ניסויים קליניים לשם הוכחת יעילות כל תכשיר - מקור, גנרי וביוסימילארי","אין צורך לבצע ניסוי קליני לתכשיר גנרי. אין צורך לבצע ניסוי קליני לתכשיר ביוסימילארי"], correct:-1, flag:"התשובה בחומר המקורי אינה חד-משמעית — שאלה זו תדולג בחידון"},
+  {n:71, q:"חוק ביטוח בריאות ממלכתי קובע כי:", opts:["כל תושב בישראל זכאי לקבל שירותי בריאות כמוגדר בחוק","המדינה מחויבת לספק את כלל הטיפולים הרפואיים הקיימים","איכות שירותי הבריאות בכל קופות החולים הקיימים","קופות החולים אחראיות למימון סל שירותי הבריאות"], correct:0},
+  {n:72, q:"איזה פעולה מותרת לביצוע על ידי רוקח?", opts:["לנפק תכשיר רשום במרשם (למעט ניפוק גנרי)","לתקן טעות במרשם ולנפק בהתאם","לעסוק ברפואה בבית המרקחת","לאפשר לטכנאי בית מרקחת לנפק תרופה בעת היעדרותו מבית המרקחת"], correct:0},
+  {n:73, q:"פעילות טכנאי בית מרקחת:", opts:["אין הגבלה על מספר הטכנאים שיכולים לעבוד במשמרת","רוקח מחוזי יכול להגביל את מספר הטכנאים שיכולים לעבוד במשמרת על בסיס שיקול דעתו","מספר הטכנאים שיכולים לעבוד במשמרת קבוע בחוק ולא ניתן לשנותו","טכנאי בית מרקחת יכול לבצע פעולות המותרות גם ללא נוכחות של רוקח בבית המרקחת"], correct:0},
+]},,
+
+{ section: "שאלות נוספות מהתמונות", questions: [
+  {n:74, q:"מה נכון ביחס לפנקס המרשמים?", opts:["ניתן לנהל פנקס דיגיטלי","חובה לנהל פנקס ידני בלבד","אין צורך בפנקס מרשמים","רק רוקח מחוזי רשאי לנהל פנקס"], correct:0},
+  {n:75, q:"כיצד מוגדרת הפרעת קשב וריכוז ADHD?", opts:["הפרעה נוירו-התפתחותית המאופיינת בחוסר קשב ו/או היפראקטיביות ואימפולסיביות","מחלה זיהומית של מערכת העצבים","הפרעה המתבטאת רק בהיפראקטיביות","הפרעת שינה בלבד"], correct:0},
+  {n:76, q:"מהי מטרת הטיפול התרופתי ב-ADHD מבחינה פיזיולוגית?", opts:["להפחית את רמות הדופמין במוח","לחסום לחלוטין נוראדרנלין","לנרמל רמות דופמין ונוראדרנלין במסלולים מרכזיים במוח, כמו הקורטקס הקדם-מצחי","להעלות רק סרוטונין"], correct:2},
+  {n:77, q:"מה מאפיין מצב של היפותירואידיזם תת-קליני?", opts:["TSH נמוך ו-T3,T4 גבוהים","TSH ו-T4 נמוכים","TSH תקין ו-T4 גבוה","TSH גבוה מהנורמה אך רמות T3,T4 עדיין תקינות"], correct:3},
+  {n:78, q:"כמה אטומי יוד מכילה מולקולה אחת של ההורמון תירוקסין T4?", opts:["1","2","3","4"], correct:3},
+  {n:79, q:"איזה מהסימנים הבאים אופייני יותר להיפרתירואידיזם (יתר פעילות)?", opts:["עלייה במשקל","אי-סבילות לקור","דפיקות לב","עצירות"], correct:2},
+  {n:80, q:"מהי תופעת הלוואי המסוכנת (אך נדירה) של Methimazole?", opts:["היפרגליקמיה","אגרנולוציטוזיס (ירידה מסוכנת בתאי דם לבנים)","עלייה בטסיות","ברדיקרדיה"], correct:1},
+  {n:81, q:"מה משמעות Black Box Warning (קופסה שחורה) בתרופה?", opts:["אזהרה רשמית חמורה לגבי סיכון חשוב או מסוכן הקשור לתרופה","סימון שהתרופה אינה פעילה","אישור שהתרופה ללא תופעות לוואי","סימון לתרופה הנמכרת ללא מרשם בלבד"], correct:0},
+  {n:82, q:"מהו המאפיין העיקרי המבדיל בין פעילות המערכת האנדוקרינית למערכת העצבים?", opts:["המערכת האנדוקרינית פועלת רק דרך עצבים","המערכת האנדוקרינית מאפשרת בקרה לטווח ארוך באמצעות הפרשה לזרם הדם","מערכת העצבים פועלת רק באמצעות הורמונים","אין הבדל ביניהן"], correct:1},
+  {n:83, q:"מה משמעות הקיצור GI או GIT?", opts:["Genetic Interaction","Gastrointestinal / גסטרואינטסטינלי","General Injection Therapy","Glucose Insulin Test"], correct:1},
+  {n:84, q:"כיצד מבוצע נטילת תרופה המסומנת כ-Oral?", opts:["דרך פי הטבעת","בהזרקה לשריר","דרך הפה","מתחת ללשון בלבד"], correct:2},
+  {n:85, q:"איזה מהבאים מתאר נכון את מנגנון הפעולה של Metformin?", opts:["חסימת הספיגה החוזרת של גלוקוז בכליות","הפחתת ייצור הגלוקוז בכבד והגברת הרגישות לאינסולין בשרירים","גירוי ישיר של תאי בטא בלבלב להפרשת אינסולין","עיכוב DPP-4"], correct:1},
+  {n:86, q:"מהו ההסבר לתופעת הלוואי של שיעול יבש בשימוש במעכבי ACE?", opts:["ירידה בסרוטונין","עלייה בהיסטמין","הצטברות של ברדיקינין עקב חסימת האנזים שמפרק אותו","ירידה באדרנלין"], correct:2},
+  {n:87, q:"כיצד מוגדר חולה הסובל מברונכיטיס כרוני?", opts:["שיעול יבש במשך שבועיים","שיעול עם ליחה ברוב ימי החודש, במשך 3 חודשים בכל שנה למשך שנתיים רצופות","קוצר נשימה חד פעם בשנה","שיעול לילי במשך חודש"], correct:1},
+  {n:89, q:"אילו מהבאים אינם נחשבים כ'מלאי בית מרקחת' לצורך הפעילות העסקית השוטפת?", opts:["תוספי תזונה ומזון רפואי","ציוד חבישה ניירות ומדבקות","תרופות נרקוטיות ותרופות פסיכוטרופיות","אביזרים אורתופדיים וחומרי חיטוי"], correct:-1, flag:"בתמונה המצורפת לא סומנה תשובה חד-משמעית — השאלה נשמרה אך תידלג בחידון"},
+  {n:90, q:"מהו ההבדל העיקרי בין תרופה כימית לתרופה ביולוגית מבחינת מקור הייצור?", opts:["תרופה כימית מיוצרת בסינתזה כימית, ותרופה ביולוגית מיוצרת באמצעות מערכות ביולוגיות/תאים חיים","שתיהן מיוצרות רק בתאים חיים","תרופה ביולוגית מיוצרת רק בסינתזה כימית","אין הבדל במקור הייצור"], correct:0},
+  {n:93, q:"מהו מנגנון הפעולה של תרופות ממשפחת הביספוספונטים כמו Fosalan?", opts:["הפעלת אוסטאוקלסטים","הגברת פירוק העצם","הגברת הפרשת סידן בכליה","היצמדות לעצם ועידוד אפופטוזיס (מוות תאי) של אוסטאוקלסטים"], correct:3},
+  {n:95, q:"איזה מהתרופות הבאות פועלת כמעכב ישיר של תרומבין?", opts:["Dabigatran","Rivaroxaban","Warfarin","Apixaban"], correct:0},
+  {n:96, q:"איזה מהבאים נחשב ל'דגל אדום' המחייב פנייה לבדיקה רפואית במקרה של שלשול?", opts:["שלשול דמי או רירי","תחושת אי נוחות קלה בבטן","צריכה מוגברת של נוזלים","יציאה מימית אחת בבוקר"], correct:0},
+  {n:97, q:"כיצד פועלת התרופה Loperamide (לופרמיד / Imodium / Stop-it)?", opts:["סופחת נוזלים מחלל המעי ומפרישה אותם החוצה","אגוניסט לרצפטורי μ במעי ובכך מקטינה את הפריסטלטיקה (תנועתיות המעי)","משנה את ה-pH של המעי כדי להרוג וירוסים","מגבירה את הפרשת הנוזלים כדי לנקות את המערכת"], correct:1},
+  {n:98, q:"איזו מהתרופות הבאות שייכת למשפחת הגאבאפנטינואידים ומינונה המקסימלי הוא 600 מ״ג?", opts:["Gabapentin","Amitriptyline","Pregabalin","Duloxetine"], correct:2},
+  {n:99, q:"מה מייחד את המנגנון של Tramadol לעומת אופיואידים סטנדרטיים?", opts:["הוא פועל רק על רצפטורים במערכת העיכול","הוא משלב הפעלת רצפטור μ עם עיכוב ספיגה חוזרת של סרוטונין ונוראדרנלין","הוא אינו גורם להתמכרות כלל","הוא חוסם תעלות סידן בדומה לליריקה"], correct:1},
+]},
+
+];
+
+const LETTERS = ["א","ב","ג","ד","ה"];
+
+// flatten, tag with section, drop unanswerable questions (correct === -1)
+let ALL_Q = [];
+DATA.forEach(sec => {
+  sec.questions.forEach(q => {
+    if(q.correct >= 0){
+      ALL_Q.push({...q, section: sec.section});
+    }
+  });
+});
+
+// populate topic select
+const topicSelect = document.getElementById('topic-select');
+const allOpt = document.createElement('option');
+allOpt.value = 'all';
+allOpt.textContent = `כל הנושאים (${ALL_Q.length} שאלות)`;
+topicSelect.appendChild(allOpt);
+DATA.forEach((sec,i) => {
+  const validCount = sec.questions.filter(q=>q.correct>=0).length;
+  if(validCount === 0) return;
+  const o = document.createElement('option');
+  o.value = sec.section;
+  o.textContent = `${sec.section} (${validCount})`;
+  topicSelect.appendChild(o);
+});
+
+let selectedCount = 'all';
+let selectedOrder = 'sequential';
+
+document.getElementById('count-chips').addEventListener('click', e => {
+  if(!e.target.classList.contains('chip')) return;
+  document.querySelectorAll('#count-chips .chip').forEach(c=>c.classList.remove('active'));
+  e.target.classList.add('active');
+  selectedCount = e.target.dataset.count;
+});
+document.getElementById('order-chips').addEventListener('click', e => {
+  if(!e.target.classList.contains('chip')) return;
+  document.querySelectorAll('#order-chips .chip').forEach(c=>c.classList.remove('active'));
+  e.target.classList.add('active');
+  selectedOrder = e.target.dataset.order;
+});
+
+function shuffle(arr){
+  const a = [...arr];
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+  return a;
+}
+
+let quizQuestions = [];
+let currentIndex = 0;
+let score = 0;
+let wrongAnswers = [];
+let answeredThisQ = false;
+
+const setupScreen = document.getElementById('setup-screen');
+const quizScreen = document.getElementById('quiz-screen');
+const resultsScreen = document.getElementById('results-screen');
+
+function buildQuiz(){
+  let pool = topicSelect.value === 'all' ? ALL_Q : ALL_Q.filter(q => q.section === topicSelect.value);
+  pool = selectedOrder === 'shuffle' ? shuffle(pool) : [...pool];
+  if(selectedCount !== 'all'){
+    pool = pool.slice(0, parseInt(selectedCount));
+  }
+  return pool;
+}
+
+document.getElementById('start-btn').addEventListener('click', () => {
+  quizQuestions = buildQuiz();
+  if(quizQuestions.length === 0) return;
+  currentIndex = 0;
+  score = 0;
+  wrongAnswers = [];
+  setupScreen.style.display = 'none';
+  quizScreen.style.display = 'block';
+  resultsScreen.style.display = 'none';
+  renderQuestion();
+});
+
+function renderQuestion(){
+  answeredThisQ = false;
+  const item = quizQuestions[currentIndex];
+  document.getElementById('progress-label').textContent = `שאלה ${currentIndex+1} מתוך ${quizQuestions.length}`;
+  document.getElementById('score-label').textContent = `ניקוד: ${score}`;
+  document.getElementById('progress-fill').style.width = `${(currentIndex/quizQuestions.length)*100}%`;
+  document.getElementById('q-topic').textContent = item.section;
+  document.getElementById('q-text').textContent = `${item.n}. ${item.q}`;
+
+  const choicesEl = document.getElementById('choices');
+  choicesEl.innerHTML = '';
+  item.opts.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'choice-btn';
+    btn.innerHTML = `<span class="letter">${LETTERS[i]}.</span><span>${opt}</span>`;
+    btn.addEventListener('click', () => selectAnswer(i));
+    choicesEl.appendChild(btn);
+  });
+
+  const flagNote = document.getElementById('flag-note');
+  if(item.flag){
+    flagNote.style.display = 'block';
+    flagNote.textContent = `⚠ ${item.flag}`;
+  } else {
+    flagNote.style.display = 'none';
+  }
+
+  document.getElementById('feedback-text').textContent = '';
+  document.getElementById('feedback-text').className = 'feedback-text';
+  document.getElementById('next-btn').classList.remove('show');
+}
+
+function selectAnswer(i){
+  if(answeredThisQ) return;
+  answeredThisQ = true;
+  const item = quizQuestions[currentIndex];
+  const buttons = document.querySelectorAll('.choice-btn');
+  buttons.forEach(b => b.disabled = true);
+
+  const isCorrect = i === item.correct;
+  if(isCorrect){
+    score++;
+    buttons[i].classList.add('chosen-correct');
+    document.getElementById('feedback-text').textContent = 'נכון! ✓';
+    document.getElementById('feedback-text').className = 'feedback-text good';
+  } else {
+    buttons[i].classList.add('chosen-wrong');
+    buttons[item.correct].classList.add('reveal-correct');
+    document.getElementById('feedback-text').textContent = `לא נכון — התשובה: ${LETTERS[item.correct]}. ${item.opts[item.correct]}`;
+    document.getElementById('feedback-text').className = 'feedback-text bad';
+    wrongAnswers.push({
+      n: item.n,
+      q: item.q,
+      chosen: `${LETTERS[i]}. ${item.opts[i]}`,
+      correct: `${LETTERS[item.correct]}. ${item.opts[item.correct]}`
+    });
+  }
+  document.getElementById('score-label').textContent = `ניקוד: ${score}`;
+  document.getElementById('next-btn').classList.add('show');
+}
+
+document.getElementById('next-btn').addEventListener('click', () => {
+  currentIndex++;
+  if(currentIndex >= quizQuestions.length){
+    showResults();
+  } else {
+    renderQuestion();
+  }
+});
+
+function showResults(){
+  quizScreen.style.display = 'none';
+  resultsScreen.style.display = 'block';
+  const total = quizQuestions.length;
+  const pct = Math.round((score/total)*100);
+  document.getElementById('final-score').textContent = `${score}/${total}`;
+  document.getElementById('final-pct').textContent = `${pct}% תשובות נכונות`;
+
+  const reviewWrap = document.getElementById('review-wrap');
+  reviewWrap.innerHTML = '';
+  if(wrongAnswers.length > 0){
+    const heading = document.createElement('div');
+    heading.className = 'review-heading';
+    heading.textContent = 'שאלות לחזרה';
+    reviewWrap.appendChild(heading);
+    const list = document.createElement('div');
+    list.className = 'review-list';
+    wrongAnswers.forEach(w => {
+      const div = document.createElement('div');
+      div.className = 'review-item';
+      div.innerHTML = `
+        <div class="rq">${w.n}. ${w.q}</div>
+        <div class="ra">התשובה שלכם: ${w.chosen}</div>
+        <div class="rc">התשובה הנכונה: ${w.correct}</div>
+      `;
+      list.appendChild(div);
+    });
+    reviewWrap.appendChild(list);
+  }
+}
+
+document.getElementById('retry-btn').addEventListener('click', () => {
+  currentIndex = 0;
+  score = 0;
+  wrongAnswers = [];
+  resultsScreen.style.display = 'none';
+  quizScreen.style.display = 'block';
+  renderQuestion();
+});
+
+document.getElementById('new-quiz-btn').addEventListener('click', () => {
+  resultsScreen.style.display = 'none';
+  setupScreen.style.display = 'block';
+});
+</script>
+</body>
+</html>
